@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {% comment %} public url for video "https://pub-1906f0b3e99447078cc1de79e9211a68.r2.dev" path "/videos" {% endcomment %}
+</head>
+<body>
+    <form id="uploadForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="video" accept="video/*" required>
+        <button type="submit">Upload Video</button>
+    </form>
+
+    <p id="status"></p>
+
+<script>
+    const form = document.getElementById("uploadForm");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();  // Sahifa reload bo‘lishini oldini oladi
+        form.submit();        // Bu orqali backend POST yuboradi
+        document.getElementById("status").innerText = "Video yuklanmoqda...";
+    });
+</script>
+
+</body>
+</html>
