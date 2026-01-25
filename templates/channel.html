@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel - StreamTube</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        surface: '#18181b',
+                        primary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header -->
+    <header class="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-[#09090b] shrink-0 z-50 fixed w-full top-0 left-0">
+        <div class="flex items-center gap-4 w-full md:w-auto z-20" id="logo-area">
+            <button id="menu-btn" class="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
+                <iconify-icon icon="solar:hamburger-menu-linear" width="24" stroke-width="1.5"></iconify-icon>
+            </button>
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center">
+                    <iconify-icon icon="solar:play-linear" width="20" stroke-width="1.5"></iconify-icon>
+                </div>
+                <span class="text-lg font-semibold tracking-tight text-white hidden sm:block">StreamTube</span>
+            </a>
+        </div>
+        <div class="hidden md:flex max-w-xl w-full items-center gap-4 px-4">
+             <div class="flex-1 flex items-center">
+                 <div class="bg-[#18181b] border border-white/10 rounded-l-full h-10 flex flex-1 items-center px-4 focus-within:border-blue-500/50  ml-8 transition-colors">
+                    <iconify-icon icon="solar:magnifer-linear" width="18" stroke-width="1.5" class="text-white/40 mr-3"></iconify-icon>
+                    <input type="text" placeholder="Search" class="bg-transparent border-none outline-none text-white w-full placeholder:text-white/30 text-sm h-full">
+                </div>
+                 <button class="w-16 h-10 bg-[#27272a] border-y border-r border-white/10 rounded-r-full flex items-center justify-center hover:bg-white/5 transition-colors">
+                    <iconify-icon icon="solar:magnifer-linear" width="20" stroke-width="1.5" class="text-white/70"></iconify-icon>
+                </button>
+            </div>
+             <button class="w-10 h-10 bg-[#18181b] border border-white/10 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors shrink-0">
+                <iconify-icon icon="solar:microphone-linear" width="20" stroke-width="1.5" class="text-white/70"></iconify-icon>
+            </button>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2 z-20">
+             <button id="mobile-search-btn" class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors md:hidden text-white">
+                <iconify-icon icon="solar:magnifer-linear" width="22"></iconify-icon>
+            </button>
+             <button class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors hidden sm:flex">
+                <iconify-icon icon="solar:videocamera-add-linear" width="22" stroke-width="1.5" class="text-white/70"></iconify-icon>
+            </button>
+            <button class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors relative">
+                <iconify-icon icon="solar:bell-linear" width="22" stroke-width="1.5" class="text-white/70"></iconify-icon>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#09090b]"></span>
+            </button>
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full ml-2 cursor-pointer border border-white/10"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 pt-14 h-full relative">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+        <aside id="sidebar" class="fixed lg:static top-14 left-0 h-[calc(100vh-3.5rem)] w-60 bg-[#09090b] border-r border-white/5 overflow-y-auto z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 pb-4">
+             <div class="p-3 space-y-1">
+                <a href="index.html" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:home-2-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Home</span>
+                </a>
+                 <a href="#" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:videocamera-record-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Shorts</span>
+                </a>
+                 <a href="#" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer bg-white/10 text-white transition-colors">
+                    <iconify-icon icon="solar:users-group-rounded-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Subscriptions</span>
+                </a>
+            </div>
+             <div class="my-2 border-t border-white/5"></div>
+            <div class="px-4 py-2">
+                <h3 class="text-xs font-semibold text-white/50 mb-3 uppercase tracking-wider">Subscriptions</h3>
+                <div class="space-y-1">
+                    <a href="channel.html" class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop" class="w-6 h-6 rounded-full object-cover">
+                        <span class="text-sm text-white/70 group-hover:text-white truncate">Frontend Masters</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-[#09090b]">
+            <div class="h-32 sm:h-48 md:h-56 w-full bg-gradient-to-r from-zinc-800 to-zinc-900 overflow-hidden relative">
+                 <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+            </div>
+            
+            <div class="px-4 sm:px-8 max-w-[1280px] mx-auto pb-4 border-b border-white/10">
+                <div class="flex flex-col sm:flex-row gap-6 items-start -mt-8 sm:-mt-0 sm:pt-6 relative z-10">
+                    <div class="w-20 h-20 sm:w-32 sm:h-32 rounded-full border-4 border-[#09090b] bg-zinc-700 flex-shrink-0 overflow-hidden">
+                         <img src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=300&auto=format&fit=crop" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col gap-2 flex-1">
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Linear</h1>
+                        <div class="text-sm text-white/50 flex flex-col gap-1">
+                            <span class="font-medium text-white/70">@linear</span>
+                            <span>1.2M subscribers • 420 videos</span>
+                             <span class="text-white/40 line-clamp-1 max-w-2xl">Creating high quality content about technology, design, and the future of digital interfaces.</span>
+                        </div>
+                        <div class="flex gap-3 mt-2">
+                             <button class="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors">Subscribe</button>
+                            <button class="border border-white/20 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/10 transition-colors">Join</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-6 mt-8 overflow-x-auto no-scrollbar border-b border-white/10">
+                    <button class="pb-3 border-b-2 border-white text-white font-medium text-sm">Home</button>
+                    <button class="pb-3 border-b-2 border-transparent text-white/50 hover:text-white font-medium text-sm transition-colors">Videos</button>
+                    <button class="pb-3 border-b-2 border-transparent text-white/50 hover:text-white font-medium text-sm transition-colors">Shorts</button>
+                </div>
+            </div>
+
+             <div class="px-4 sm:px-8 max-w-[1280px] mx-auto py-6">
+                <h3 class="font-semibold text-lg mb-4 text-white">Latest Videos</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                     <!-- Video 1 -->
+                    <div class="group flex flex-col gap-2">
+                        <a href="watch.html" class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block">
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
+                             <div class="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-semibold px-1 py-0.5 rounded">08:30</div>
+                        </a>
+                        <h4 class="text-sm font-semibold text-white leading-tight mt-1 line-clamp-2">The Future of AI Interfaces</h4>
+                        <div class="text-xs text-white/50">
+                            <span>89K views • 5 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>

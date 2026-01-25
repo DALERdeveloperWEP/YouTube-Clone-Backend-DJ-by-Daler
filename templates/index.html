@@ -1,0 +1,608 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StreamTube</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#09090b",
+              surface: "#18181b",
+              primary: "#3b82f6",
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static "style.css" %}" />
+  </head>
+  <body class="flex flex-col h-screen overflow-hidden">
+    <!-- Header -->
+    <header
+      class="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-[#09090b] shrink-0 z-50 fixed w-full top-0 left-0"
+    >
+      <!-- Left: Menu & Logo -->
+      <div class="flex items-center gap-4 w-full md:w-auto z-20" id="logo-area">
+        <button
+          id="menu-btn"
+          class="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors"
+        >
+          <iconify-icon
+            icon="solar:hamburger-menu-linear"
+            width="24"
+            stroke-width="1.5"
+          ></iconify-icon>
+        </button>
+        <a href="index.html" class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center"
+          >
+            <iconify-icon
+              icon="solar:play-linear"
+              width="20"
+              stroke-width="1.5"
+            ></iconify-icon>
+          </div>
+          <span
+            class="text-lg font-semibold tracking-tight text-white hidden sm:block"
+            >StreamTube</span
+          >
+        </a>
+      </div>
+
+      <!-- Middle: Search (Desktop) -->
+      <div class="hidden md:flex max-w-xl w-full items-center gap-4 px-4">
+        <div class="flex-1 flex items-center">
+          <div
+            class="bg-[#18181b] border border-white/10 rounded-l-full h-10 flex flex-1 items-center px-4 focus-within:border-blue-500/50 ml-8 transition-colors"
+          >
+            <input
+              type="text"
+              placeholder="Search"
+              class="bg-transparent border-none outline-none text-white w-full placeholder:text-white/30 text-sm h-full"
+            />
+          </div>
+          <button
+            class="w-16 h-10 bg-[#27272a] border-y border-r border-white/10 rounded-r-full flex items-center justify-center hover:bg-white/5 transition-colors"
+          >
+            <iconify-icon
+              icon="solar:magnifer-linear"
+              width="20"
+              stroke-width="1.5"
+              class="text-white/70"
+            ></iconify-icon>
+          </button>
+        </div>
+        <button
+          class="w-10 h-10 bg-[#18181b] border border-white/10 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors shrink-0"
+        >
+          <iconify-icon
+            icon="solar:microphone-linear"
+            width="20"
+            stroke-width="1.5"
+            class="text-white/70"
+          ></iconify-icon>
+        </button>
+      </div>
+
+      <!-- Mobile Search Bar (Hidden by default) -->
+      <div
+        id="mobile-search-bar"
+        class="hidden absolute inset-0 bg-[#09090b] z-30 px-2 items-center gap-2 md:hidden"
+      >
+        <button id="search-back-btn" class="p-2 rounded-full hover:bg-white/10">
+          <iconify-icon
+            icon="solar:arrow-left-linear"
+            width="24"
+            class="text-white"
+          ></iconify-icon>
+        </button>
+        <input
+          type="text"
+          placeholder="Search YouTube"
+          class="flex-1 bg-[#18181b] rounded-full px-4 py-2 text-white outline-none border border-white/10 focus:border-blue-500/50"
+        />
+        <button class="p-2 rounded-full bg-[#18181b] border border-white/10">
+          <iconify-icon
+            icon="solar:magnifer-linear"
+            width="20"
+            class="text-white"
+          ></iconify-icon>
+        </button>
+      </div>
+
+      <!-- Right: Actions & User -->
+      <div class="flex items-center gap-1 sm:gap-2 z-20">
+        <button
+          id="mobile-search-btn"
+          class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors md:hidden text-white"
+        >
+          <iconify-icon icon="solar:magnifer-linear" width="22"></iconify-icon>
+        </button>
+        <button
+          class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors hidden sm:flex"
+        >
+          <iconify-icon
+            icon="solar:videocamera-add-linear"
+            width="22"
+            stroke-width="1.5"
+            class="text-white/70"
+          ></iconify-icon>
+        </button>
+        <button
+          class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors relative"
+        >
+          <iconify-icon
+            icon="solar:bell-linear"
+            width="22"
+            stroke-width="1.5"
+            class="text-white/70"
+          ></iconify-icon>
+          <span
+            class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#09090b]"
+          ></span>
+        </button>
+        <div
+          class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full ml-2 cursor-pointer border border-white/10"
+        ></div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 pt-14 h-full relative">
+      <!-- Sidebar Overlay (Mobile) -->
+      <div
+        id="sidebar-overlay"
+        class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"
+      ></div>
+
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="fixed lg:static top-14 left-0 h-[calc(100vh-3.5rem)] w-60 bg-[#09090b] border-r border-white/5 overflow-y-auto z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 pb-4"
+      >
+        <!-- Main Nav -->
+        <div class="p-3 space-y-1">
+          <a
+            href="index.html"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer bg-white/10 text-white transition-colors"
+          >
+            <iconify-icon icon="solar:home-2-bold" width="24"></iconify-icon>
+            <span class="text-sm font-medium">Home</span>
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors group"
+          >
+            <iconify-icon
+              icon="solar:videocamera-record-linear"
+              width="24"
+              class="group-hover:text-white transition-colors"
+            ></iconify-icon>
+            <span class="text-sm font-medium">Shorts</span>
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors group"
+          >
+            <iconify-icon
+              icon="solar:users-group-rounded-linear"
+              width="24"
+              class="group-hover:text-white transition-colors"
+            ></iconify-icon>
+            <span class="text-sm font-medium">Subscriptions</span>
+          </a>
+        </div>
+
+        <div class="my-2 border-t border-white/5"></div>
+
+        <!-- Library -->
+        <div class="p-3 space-y-1">
+          <a
+            href="#"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors group"
+          >
+            <iconify-icon icon="solar:history-linear" width="24"></iconify-icon>
+            <span class="text-sm font-medium">History</span>
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors group"
+          >
+            <iconify-icon
+              icon="solar:folder-with-files-linear"
+              width="24"
+            ></iconify-icon>
+            <span class="text-sm font-medium">Your Videos</span>
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors group"
+          >
+            <iconify-icon
+              icon="solar:clock-circle-linear"
+              width="24"
+            ></iconify-icon>
+            <span class="text-sm font-medium">Watch Later</span>
+          </a>
+        </div>
+
+        <div class="my-2 border-t border-white/5"></div>
+
+        <!-- Subscriptions -->
+        <div class="px-4 py-2">
+          <h3
+            class="text-xs font-semibold text-white/50 mb-3 uppercase tracking-wider"
+          >
+            Subscriptions
+          </h3>
+          <div class="space-y-1">
+            <a
+              href="channel.html"
+              class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop"
+                class="w-6 h-6 rounded-full object-cover"
+              />
+              <span
+                class="text-sm text-white/70 group-hover:text-white truncate"
+                >Frontend Masters</span
+              >
+            </a>
+            <a
+              href="channel.html"
+              class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=100&auto=format&fit=crop"
+                class="w-6 h-6 rounded-full object-cover"
+              />
+              <span
+                class="text-sm text-white/70 group-hover:text-white truncate"
+                >Linear</span
+              >
+            </a>
+            <a
+              href="channel.html"
+              class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop"
+                class="w-6 h-6 rounded-full object-cover"
+              />
+              <span
+                class="text-sm text-white/70 group-hover:text-white truncate"
+                >Tech Focus</span
+              >
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto bg-[#09090b]">
+        <div class="max-w-[2000px] mx-auto">
+          <!-- Category Chips -->
+          <div
+            class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-sm px-4 py-3 border-b border-white/5 flex gap-3 overflow-x-auto no-scrollbar w-full"
+          >
+            <button
+              class="bg-white text-black font-semibold px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              All
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Design
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Development
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Artificial Intelligence
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Music
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Gaming
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Podcasts
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Live
+            </button>
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              Gadgets
+            </button>
+          </div>
+
+          <!-- Video Grid -->
+          <div class="p-4 sm:p-6 video-grid">
+            <!-- Video Card 1 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=1"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  12:45
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1669837245415-02f0643ea35d?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=1"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >Building a Design System in 2024</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >Vercel</a
+                    >
+                    <span>124K views • 2 days ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Card 2 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=2"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  08:30
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=2"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >The Future of AI Interfaces</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >Linear</a
+                    >
+                    <span>89K views • 5 hours ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Card 3 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=3"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  15:20
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=3"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >Minimalist Desk Setup Tour</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >Tech Focus</a
+                    >
+                    <span>1.2M views • 1 month ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Card 4 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=4"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  24:10
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=4"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >Coding a SaaS in 24 Hours</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >DevDaily</a
+                    >
+                    <span>450K views • 1 week ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Card 5 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=5"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  45:00
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=5"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >Abstract 3D Art with Blender</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >Polygon</a
+                    >
+                    <span>67K views • 1 day ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Card 6 -->
+            <div class="group flex flex-col gap-3">
+              <a
+                href="watch.html?v=6"
+                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=1000&auto=format&fit=crop"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  alt="Thumbnail"
+                />
+                <div
+                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                >
+                  18:05
+                </div>
+              </a>
+              <div class="flex gap-3 items-start">
+                <a href="channel.html" class="shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop"
+                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                  />
+                </a>
+                <div class="flex flex-col gap-0.5">
+                  <a
+                    href="watch.html?v=6"
+                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                    >Cinematic Color Grading Tutorial</a
+                  >
+                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    <a
+                      href="channel.html"
+                      class="hover:text-white transition-colors"
+                      >Film School</a
+                    >
+                    <span>22K views • 3 days ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static "main.js" %}"></script>
+  </body>
+</html>

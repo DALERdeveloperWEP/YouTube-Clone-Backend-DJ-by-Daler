@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch - StreamTube</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        surface: '#18181b',
+                        primary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Icons -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header (Duplicated) -->
+    <header class="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-[#09090b] shrink-0 z-50 fixed w-full top-0 left-0">
+        <div class="flex items-center gap-4 w-full md:w-auto z-20" id="logo-area">
+            <button id="menu-btn" class="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
+                <iconify-icon icon="solar:hamburger-menu-linear" width="24" stroke-width="1.5"></iconify-icon>
+            </button>
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center">
+                    <iconify-icon icon="solar:play-linear" width="20" stroke-width="1.5"></iconify-icon>
+                </div>
+                <span class="text-lg font-semibold tracking-tight text-white hidden sm:block">StreamTube</span>
+            </a>
+        </div>
+        <div class="hidden md:flex max-w-xl w-full items-center gap-4 px-4">
+             <div class="flex-1 flex items-center">
+                 <div class="bg-[#18181b] border border-white/10 rounded-l-full h-10 flex flex-1 items-center px-4 focus-within:border-blue-500/50  ml-8 transition-colors">
+                    <iconify-icon icon="solar:magnifer-linear" width="18" stroke-width="1.5" class="text-white/40 mr-3"></iconify-icon>
+                    <input type="text" placeholder="Search" class="bg-transparent border-none outline-none text-white w-full placeholder:text-white/30 text-sm h-full">
+                </div>
+                 <button class="w-16 h-10 bg-[#27272a] border-y border-r border-white/10 rounded-r-full flex items-center justify-center hover:bg-white/5 transition-colors">
+                    <iconify-icon icon="solar:magnifer-linear" width="20" stroke-width="1.5" class="text-white/70"></iconify-icon>
+                </button>
+            </div>
+             <button class="w-10 h-10 bg-[#18181b] border border-white/10 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors shrink-0">
+                <iconify-icon icon="solar:microphone-linear" width="20" stroke-width="1.5" class="text-white/70"></iconify-icon>
+            </button>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2 z-20">
+             <button id="mobile-search-btn" class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors md:hidden text-white">
+                <iconify-icon icon="solar:magnifer-linear" width="22"></iconify-icon>
+            </button>
+             <button class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors hidden sm:flex">
+                <iconify-icon icon="solar:videocamera-add-linear" width="22" stroke-width="1.5" class="text-white/70"></iconify-icon>
+            </button>
+            <button class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors relative">
+                <iconify-icon icon="solar:bell-linear" width="22" stroke-width="1.5" class="text-white/70"></iconify-icon>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#09090b]"></span>
+            </button>
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full ml-2 cursor-pointer border border-white/10"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 pt-14 h-full relative">
+         <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+        <!-- Sidebar (Hidden on large screens for Watch page specifically, or mini mode - usually Watch has no sidebar or over-top sidebar) -->
+        <!-- In YouTube, Watch page has no fixed sidebar. We'll implement the drawer behavior only. -->
+        <aside id="sidebar" class="fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-60 bg-[#09090b] border-r border-white/5 overflow-y-auto z-50 transform -translate-x-full transition-transform duration-200 pb-4">
+             <div class="p-3 space-y-1">
+                <a href="index.html" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:home-2-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Home</span>
+                </a>
+                 <a href="#" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:videocamera-record-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Shorts</span>
+                </a>
+                 <a href="#" class="flex items-center gap-4 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+                    <iconify-icon icon="solar:users-group-rounded-linear" width="24"></iconify-icon>
+                    <span class="text-sm font-medium">Subscriptions</span>
+                </a>
+            </div>
+             <div class="my-2 border-t border-white/5"></div>
+            <div class="px-4 py-2">
+                <h3 class="text-xs font-semibold text-white/50 mb-3 uppercase tracking-wider">Subscriptions</h3>
+                <div class="space-y-1">
+                    <a href="channel.html" class="flex items-center gap-3 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop" class="w-6 h-6 rounded-full object-cover">
+                        <span class="text-sm text-white/70 group-hover:text-white truncate">Frontend Masters</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-[#09090b]">
+            <div class="flex flex-col lg:flex-row max-w-[1800px] mx-auto p-4 lg:p-6 gap-6">
+                
+                <!-- Primary Column (Video + Info) -->
+                <div class="flex-1 min-w-0">
+                    <!-- Player placeholder -->
+                    <div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative group">
+                        <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-50 group-hover:opacity-40 transition-opacity">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform cursor-pointer">
+                                <iconify-icon icon="solar:play-bold" width="32" class="text-white ml-1"></iconify-icon>
+                            </div>
+                        </div>
+                        <!-- Controls Mock -->
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                            <div class="h-full w-1/3 bg-red-600 relative">
+                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full scale-0 group-hover:scale-100 transition-transform"></div>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 w-full p-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/80 to-transparent">
+                             <div class="flex items-center gap-4 text-white">
+                                <iconify-icon icon="solar:play-bold" width="24"></iconify-icon>
+                                <iconify-icon icon="solar:volume-loud-bold" width="24"></iconify-icon>
+                                <span class="text-xs font-medium">12:45 / 32:10</span>
+                             </div>
+                             <div class="flex items-center gap-4 text-white">
+                                <iconify-icon icon="solar:settings-linear" width="24"></iconify-icon>
+                                <iconify-icon icon="solar:full-screen-linear" width="24"></iconify-icon>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="text-xl font-bold tracking-tight mt-4 text-white line-clamp-2">Building a Design System in 2024</h1>
+
+                    <!-- Actions Bar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pb-4 border-b border-white/10 gap-4">
+                        <div class="flex items-center gap-3">
+                            <a href="channel.html">
+                                <img src="https://images.unsplash.com/photo-1669837245415-02f0643ea35d?q=80&w=100&auto=format&fit=crop" class="w-10 h-10 rounded-full object-cover">
+                            </a>
+                            <div class="flex flex-col">
+                                <a href="channel.html" class="font-semibold text-sm hover:text-white transition-colors">Vercel</a>
+                                <span class="text-xs text-white/50">124K subscribers</span>
+                            </div>
+                            <button class="ml-4 bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">Subscribe</button>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                            <div class="flex items-center bg-[#27272a] rounded-full shrink-0">
+                                <button class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-l-full transition-colors border-r border-white/10">
+                                    <iconify-icon icon="solar:like-linear" width="20"></iconify-icon>
+                                    <span class="text-sm font-medium">12K</span>
+                                </button>
+                                <button class="px-4 py-2 hover:bg-white/10 rounded-r-full transition-colors">
+                                    <iconify-icon icon="solar:dislike-linear" width="20"></iconify-icon>
+                                </button>
+                            </div>
+                            <button class="flex items-center gap-2 bg-[#27272a] hover:bg-[#3f3f46] px-4 py-2 rounded-full transition-colors shrink-0">
+                                <iconify-icon icon="solar:share-linear" width="20"></iconify-icon>
+                                <span class="text-sm font-medium">Share</span>
+                            </button>
+                             <button class="bg-[#27272a] hover:bg-[#3f3f46] w-9 h-9 flex items-center justify-center rounded-full transition-colors shrink-0">
+                                <iconify-icon icon="solar:menu-dots-linear" width="20"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mt-4 bg-[#27272a] p-3 rounded-xl cursor-pointer hover:bg-[#3f3f46] transition-colors">
+                        <div class="flex gap-2 text-sm font-medium mb-1">
+                            <span>124K views</span>
+                            <span>2 days ago</span>
+                        </div>
+                        <p class="text-sm text-white/80 leading-relaxed">
+                            In this video, we explore the fundamental principles of design systems and how they scale within large organizations. We'll cover tokens, components, and documentation.
+                        </p>
+                    </div>
+
+                    <!-- Comments -->
+                    <div class="mt-6 hidden lg:block">
+                        <h3 class="text-lg font-semibold mb-4">642 Comments</h3>
+                        <div class="flex gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center text-sm font-bold">U</div>
+                            <input type="text" placeholder="Add a comment..." class="w-full bg-transparent border-b border-white/10 focus:border-white outline-none pb-1 text-sm placeholder:text-white/30 transition-colors">
+                        </div>
+                        <!-- Comment Item -->
+                         <div class="flex gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-green-600 flex-shrink-0"></div>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-semibold text-white">@user123</span>
+                                    <span class="text-xs text-white/50">2 hours ago</span>
+                                </div>
+                                <p class="text-sm text-white">This was incredibly helpful, especially the part about design tokens!</p>
+                                <div class="flex items-center gap-4 mt-1">
+                                    <button class="flex items-center gap-1 text-white/70 hover:text-white">
+                                        <iconify-icon icon="solar:like-linear" width="16"></iconify-icon>
+                                        <span class="text-xs">24</span>
+                                    </button>
+                                     <button class="flex items-center gap-1 text-white/70 hover:text-white">
+                                        <iconify-icon icon="solar:dislike-linear" width="16"></iconify-icon>
+                                    </button>
+                                    <span class="text-xs font-medium cursor-pointer hover:text-white">Reply</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Column (Related Videos) -->
+                <div class="w-full lg:w-[400px] flex flex-col gap-3 shrink-0">
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-1">
+                        <button class="bg-white text-black px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap">All</button>
+                        <button class="bg-[#27272a] text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#3f3f46] whitespace-nowrap">From Vercel</button>
+                        <button class="bg-[#27272a] text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#3f3f46] whitespace-nowrap">Related</button>
+                    </div>
+
+                    <!-- Related Video 1 -->
+                    <a href="watch.html" class="flex gap-2 cursor-pointer group">
+                        <div class="relative w-40 aspect-video-card rounded-lg overflow-hidden bg-[#18181b] shrink-0">
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                             <div class="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-semibold px-1 py-0.5 rounded">08:30</div>
+                        </div>
+                        <div class="flex flex-col gap-1 pr-2">
+                            <h4 class="text-sm font-semibold text-white leading-tight line-clamp-2 group-hover:text-white">The Future of AI Interfaces</h4>
+                            <div class="text-xs text-white/50">
+                                <p>Linear</p>
+                                <p>89K views • 5 hours ago</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Related Video 2 -->
+                    <a href="watch.html" class="flex gap-2 cursor-pointer group">
+                        <div class="relative w-40 aspect-video-card rounded-lg overflow-hidden bg-[#18181b] shrink-0">
+                            <img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                             <div class="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-semibold px-1 py-0.5 rounded">15:20</div>
+                        </div>
+                         <div class="flex flex-col gap-1 pr-2">
+                            <h4 class="text-sm font-semibold text-white leading-tight line-clamp-2 group-hover:text-white">Minimalist Desk Setup Tour</h4>
+                            <div class="text-xs text-white/50">
+                                <p>Tech Focus</p>
+                                <p>1.2M views • 1 month ago</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+     <!-- Scripts -->
+    <script src="js/main.js"></script>
+</body>
+</html>

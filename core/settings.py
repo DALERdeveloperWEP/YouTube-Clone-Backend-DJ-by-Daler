@@ -28,10 +28,10 @@ SECRET_KEY = 'django-insecure-t0n(hwnc7z$&k9z=(n!hl1j%j5+at@!bdt06py2-l9l6%f2gqx
 
 # settings.py
 try:
-    R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', cancast=str)
-    R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', cancast=str)
-    R2_BUCKET_NAME = config('R2_BUCKET_NAME', cancast=str)
-    R2_ENDPOINT_URL = config('R2_ENDPOINT_URL', cancast=str)
+    R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', cast=str)
+    R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', cast=str)
+    R2_BUCKET_NAME = config('R2_BUCKET_NAME', cast=str)
+    R2_ENDPOINT_URL = config('R2_ENDPOINT_URL', cast=str)
 except Exception as e:
     raise Exception("Error loading environment variables: " + str(e))
 
@@ -96,7 +96,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME', default='video_upload_db'),
         'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='YouTube'),
+        'PASSWORD': config('DB_PASSWORD', default=''),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
     }
