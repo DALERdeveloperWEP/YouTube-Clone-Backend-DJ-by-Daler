@@ -9,6 +9,7 @@ class Category(models.Model):
 
 class Video(models.Model):
     title = models.CharField(max_length=127)
+    slug = models.SlugField()
     description = models.CharField(max_length=500, blank=True)
     public_url = models.URLField()
     thumbnail = models.URLField()
