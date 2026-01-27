@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import upload_video_r2
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("upload-video/", upload_video_r2),
-    path('', include('videos.urls'))
+    path('', include('videos.urls')),
+    path('', include('users.urls')),
+    path('', include('interactions.urls')),
 ]
 
 if settings.DEBUG:

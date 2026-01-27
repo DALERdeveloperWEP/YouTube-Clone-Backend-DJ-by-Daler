@@ -28,20 +28,30 @@ SECRET_KEY = 'django-insecure-t0n(hwnc7z$&k9z=(n!hl1j%j5+at@!bdt06py2-l9l6%f2gqx
 
 # settings.py
 try:
-    R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', cast=str)
-    R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', cast=str)
-    R2_BUCKET_NAME = config('R2_BUCKET_NAME', cast=str)
-    R2_ENDPOINT_URL = config('R2_ENDPOINT_URL', cast=str)
+    R2_ACCESS_KEY_ID = config('CLOUDFLARE_R2_KEY_ID', cast=str)
+    R2_SECRET_ACCESS_KEY = config('CLOUDFLARE_R2_SECRET', cast=str)
+    R2_BUCKET_NAME = config('CLOUDFLARE_R2_BUCKET', cast=str)
+    R2_ENDPOINT_URL = config('CLOUDFLARE_R2_ENDPOINT', cast=str)
+    
+    CLOUDFLARE_R2_CONFIG_OPTIONS = {
+        "bucket_name": R2_BUCKET_NAME,
+        "access_key": R2_ACCESS_KEY_ID,
+        "secret_key": R2_SECRET_ACCESS_KEY,
+        "endpoint_url": R2_ENDPOINT_URL,
+        "default_acl": "public-read",  # yoki "private"
+        "signature_version": "s3v4",
+    }
+
 except Exception as e:
     raise Exception("Error loading environment variables: " + str(e))
 
 match config('DJANGO_ENV', default=False):
     case True | 'development':
         DEBUG = True
-        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html']
     case False | 'production':
         DEBUG = False
-        ALLOWED_HOSTS = ['yourdomain.com']
+        ALLOWED_HOSTS = ['yourdomain.com', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html']
 
 # Application definition
 
