@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'videos.apps.VideosConfig',
     'interactions.apps.InteractionsConfig',
+    'user_auth.apps.UserAuthConfig'
 ]
 
 MIDDLEWARE = [
