@@ -72,8 +72,7 @@
   >
     <!-- Header / Navigation -->
     <nav
-      class="w-full flex items-center justify-between px-6 py-4 fixed top-0 left-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-[70px]"
-    >
+      class="w-full flex items-center justify-between px-6 py-4 fixed top-0 left-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-[70px]">
       <div
         class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
       >
@@ -128,8 +127,10 @@
                 handleLogin();
               "
               class="space-y-4"
-              action=''
+              method="POST"
+              action='{% url "login" %}'
             >
+              {% csrf_token %}
               <div class="space-y-1.5">
                 <label
                   for="login-email"
@@ -146,6 +147,7 @@
                     type="email"
                     id="login-email"
                     required=""
+                    name="email"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="name@example.com"
                   />
@@ -175,6 +177,7 @@
                     type="password"
                     id="login-password"
                     required=""
+                    name="password"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="••••••••"
                   />
@@ -211,8 +214,7 @@
 
             <!-- Google OAuth -->
             <button
-              class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group"
-            >
+              class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group">
               <svg class="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -237,7 +239,7 @@
             <div class="mt-6 text-center">
               <p class="text-sm text-neutral-500">
                 Don't have an account?
-                <a href="{% url "register" %}"
+                <a href='{% url "register" %}'
                   class="text-white hover:text-neutral-300 font-medium transition-colors ml-1"
                 >
                   Sign up
@@ -262,8 +264,11 @@
                 event.preventDefault();
                 handleRegister();
               "
+              method="POST"
               class="space-y-4"
+              action='{% url "register" %}'
             >
+              {% csrf_token %}
               <!-- Username -->
               <div class="space-y-1.5">
                 <label
@@ -281,6 +286,7 @@
                     type="text"
                     id="reg-username"
                     required=""
+                    name="username"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="Display name"
                   />
@@ -304,6 +310,7 @@
                     type="email"
                     id="reg-email"
                     required=""
+                    name="email"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="name@example.com"
                   />
@@ -322,6 +329,7 @@
                     type="password"
                     id="reg-password"
                     required=""
+                    name="password"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg px-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="••••••••"
                   />
@@ -336,6 +344,7 @@
                     type="password"
                     id="reg-confirm"
                     required=""
+                    name="confirm"
                     class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg px-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
                     placeholder="••••••••"
                   />
@@ -373,8 +382,7 @@
 
             <!-- Google OAuth -->
             <button
-              class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group"
-            >
+              class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group">
               <svg class="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -399,7 +407,7 @@
             <div class="mt-6 text-center">
               <p class="text-sm text-neutral-500">
                 Already have an account?
-                <a href="{% url "login" %}"
+                <a href='{% url "login" %}'
                   class="text-white hover:text-neutral-300 font-medium transition-colors ml-1"
                 >
                   Sign in
@@ -455,6 +463,7 @@
             setLoading("login-btn", false);
           }, 1500);
         }, 1000);
+        btn.form.submit();
       }
 
       function handleRegister() {
@@ -470,6 +479,7 @@
             setLoading("register-btn", false);
           }, 1500);
         }, 1000);
+        btn.form.submit();
       }
     </script>
   </body>

@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StreamTube - Verification</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #000000;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .logo {
+        position: absolute;
+        top: 32px;
+        left: 32px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .logo-icon::before {
+        content: "";
+        width: 0;
+        height: 0;
+        border-left: 10px solid black;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        margin-left: 2px;
+      }
+
+      .container {
+        background: #1a1a1a;
+        border-radius: 24px;
+        padding: 56px 48px;
+        width: 100%;
+        max-width: 550px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+
+      .header h1 {
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+      }
+
+      .header p {
+        color: #9ca3af;
+        font-size: 15px;
+        font-weight: 400;
+      }
+
+      .otp-container {
+        margin-bottom: 32px;
+      }
+
+      .otp-inputs {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .otp-input {
+        width: 64px;
+        height: 72px;
+        background: #0f0f0f;
+        border: 2px solid #2a2a2a;
+        border-radius: 12px;
+        font-size: 28px;
+        font-weight: 600;
+        color: #ffffff;
+        text-align: center;
+        transition: all 0.2s ease;
+        outline: none;
+        caret-color: #22c55e;
+      }
+
+      .otp-input:focus {
+        border-color: #22c55e;
+        background: #141414;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+      }
+
+      .otp-input:not(:placeholder-shown) {
+        border-color: #374151;
+      }
+
+      .otp-input.error {
+        border-color: #ef4444;
+        animation: shake 0.3s ease;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+
+      .resend-section {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+
+      .resend-section a {
+        color: #22c55e;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+        cursor: pointer;
+      }
+
+      .resend-section a:hover {
+        color: #16a34a;
+      }
+
+      .submit-btn {
+        width: 100%;
+        background: #22c55e;
+        color: #000000;
+        border: none;
+        border-radius: 12px;
+        padding: 16px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+      }
+
+      .submit-btn:hover:not(:disabled) {
+        background: #16a34a;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+      }
+
+      .submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .submit-btn:disabled {
+        background: #2a2a2a;
+        color: #6b7280;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .error-message {
+        color: #ef4444;
+        font-size: 14px;
+        text-align: center;
+        margin-top: 16px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .container {
+        animation: fadeIn 0.5s ease;
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          padding: 40px 32px;
+        }
+
+        .otp-input {
+          width: 56px;
+          height: 64px;
+          font-size: 24px;
+        }
+
+        .otp-inputs {
+          gap: 12px;
+        }
+
+        .logo {
+          top: 20px;
+          left: 20px;
+        }
+      }
+      @media (max-width: 480px) {
+        .otp-input {
+          width: 46px;
+          height: 54px;
+          font-size: 24px;
+        }
+      }
+
+      .verification-icon {
+        width: 80px;
+        height: 80px;
+        background: #f59e0b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 32px;
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        transition: transform 0.3s ease;
+      }
+
+      .verification-icon:hover {
+        transform: scale(1.05);
+      }
+
+      .verification-icon svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      @media (max-width: 640px) {
+        .verification-icon {
+          width: 64px;
+          height: 64px;
+          margin-bottom: 24px;
+        }
+        .verification-icon svg {
+          width: 32px;
+          height: 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span>StreamTube</span>
+    </div>
+
+    <div class="container">
+      <div class="header">
+        <div class="verification-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z"
+              fill="white"
+            />
+            <path
+              d="M9 12L11 14L15 10"
+              stroke="#f59e0b"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <h1>Enter Verification Code</h1>
+        <p>We've sent a code to your email</p>
+      </div>
+
+      <form id="verificationForm" method="POST" action="{% url 'verify' %}">
+        {% csrf_token %}
+        
+        <!-- Hidden input that will contain the concatenated 6-digit code -->
+        <input type="hidden" id="codeInput" name="code" value="" />
+        
+        <div class="otp-container">
+          <div class="otp-inputs">
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <input
+              type="text"
+              class="otp-input"
+              maxlength="1"
+              pattern="[0-9]"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="resend-section">
+            Didn't get the code? <a href="#" id="resendBtn">Resend</a>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>Verify</button>
+        {{ Errors }}
+        <!-- Display Django error from backend -->
+        {% if Errors %}
+        <div class="error-message show">{{ Errors }}</div>
+        {% endif %}
+        
+        <div class="error-message" id="errorMessage"></div>
+      </form>
+    </div>
+
+    <script>
+      const form = document.getElementById("verificationForm");
+      const inputs = document.querySelectorAll(".otp-input");
+      const submitBtn = document.getElementById("submitBtn");
+      const resendBtn = document.getElementById("resendBtn");
+      const errorMessage = document.getElementById("errorMessage");
+      const codeInput = document.getElementById("codeInput");
+
+      inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+          const value = e.target.value;
+
+          // Only allow numbers
+          if (value && !/[0-9]/.test(value)) {
+            input.value = "";
+            return;
+          }
+
+          // Remove error styling
+          input.classList.remove("error");
+          errorMessage.classList.remove("show");
+
+          if (value && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+
+          checkCompletion();
+        });
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !input.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+
+          if (e.key === "ArrowLeft" && index > 0) {
+            inputs[index - 1].focus();
+          }
+
+          if (e.key === "ArrowRight" && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener("paste", (e) => {
+          e.preventDefault();
+          const pastedData = e.clipboardData
+            .getData("text")
+            .slice(0, inputs.length);
+
+          pastedData.split("").forEach((char, i) => {
+            if (inputs[i] && /[0-9]/.test(char)) {
+              inputs[i].value = char;
+            }
+          });
+
+          const lastFilledIndex = Math.min(
+            pastedData.length - 1,
+            inputs.length - 1,
+          );
+          inputs[lastFilledIndex].focus();
+
+          checkCompletion();
+        });
+      });
+
+      function checkCompletion() {
+        const allFilled = Array.from(inputs).every(
+          (input) => input.value.length === 1,
+        );
+        submitBtn.disabled = !allFilled;
+        
+        // Update hidden input with concatenated code
+        if (allFilled) {
+          const code = Array.from(inputs)
+            .map((input) => input.value)
+            .join("");
+          codeInput.value = code;
+        }
+      }
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add("show");
+        inputs.forEach(input => input.classList.add("error"));
+      }
+
+      // Form will submit normally to Django view
+      form.addEventListener("submit", (e) => {
+        const code = Array.from(inputs)
+          .map((input) => input.value)
+          .join("");
+        
+        // Ensure code is set in hidden input
+        codeInput.value = code;
+        
+        // Update button state
+        submitBtn.textContent = "Verifying...";
+        submitBtn.disabled = true;
+        
+        // Form will submit normally to Django
+        // Django view will handle the verification and redirect/render accordingly
+      });
+
+      // Handle resend button
+      resendBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        
+        // Show loading state
+        const originalText = resendBtn.textContent;
+        resendBtn.textContent = "Sending...";
+        
+        // Redirect to resend URL
+        window.location.href = resendBtn.href;
+      });
+
+      // If there's an error from Django, show it with animation
+      {% if error %}
+      inputs.forEach(input => input.classList.add("error"));
+      {% endif %}
+
+      // Auto-focus first input
+      inputs[0].focus();
+    </script>
+  </body>
+</html>
