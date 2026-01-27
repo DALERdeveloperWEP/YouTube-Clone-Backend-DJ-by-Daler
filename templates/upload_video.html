@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload to Cloudflare R2</title>
+</head>
+<body>
+
+<h2>File upload</h2>
+
+<form id="uploadForm" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" required />
+    <button type="submit">Upload</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+document.getElementById("uploadForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const res = await fetch("/", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    });
+
+    const data = await res.json();
+
+    document.getElementById("result").innerHTML =
+        `<a href="${data.url}" target="_blank">${data.url}</a>`;
+};
+</script>
+
+</body>
+</html>
