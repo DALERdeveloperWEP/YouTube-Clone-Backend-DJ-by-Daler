@@ -1,0 +1,500 @@
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StreamTube - Authentication</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              background: "#0f0f0f",
+              surface: "#161616",
+              border: "#222222",
+              primary: "#ffffff",
+              secondary: "#a1a1a1",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Refined Scrollbar for the Auth Card */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+      .fade-in {
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.98) translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+      .hidden-form {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <!-- LAYOUT FIX: Changed min-h-screen to h-screen and added overflow-hidden to lock viewport -->
+  <body
+    class="bg-background text-white font-sans antialiased h-screen overflow-hidden flex flex-col selection:bg-white/10 selection:text-white"
+  >
+    <!-- Header / Navigation -->
+    <nav
+      class="w-full flex items-center justify-between px-6 py-4 fixed top-0 left-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-[70px]"
+    >
+      <div
+        class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+      >
+        <div
+          class="bg-white text-black p-1 rounded-[6px] flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+        >
+          <i
+            data-lucide="play"
+            class="fill-current w-3.5 h-3.5 ml-0.5"
+            stroke-width="1.5"
+          ></i>
+        </div>
+        <span class="text-base font-semibold tracking-tight text-neutral-200"
+          >StreamTube</span
+        >
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <!-- LAYOUT FIX: Removed min-h-screen, added h-full, pt-20 pb-16 to account for fixed header/footer without overlap -->
+    <main
+      class="flex-1 flex flex-col items-center justify-center p-4 relative w-full h-full pt-[80px] pb-[60px]"
+    >
+      <!-- Glow Effects -->
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"
+      ></div>
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[80px] pointer-events-none"
+      ></div>
+
+      <!-- Auth Card -->
+      <!-- LAYOUT FIX: Added max-h-[calc(100vh-140px)] and overflow-y-auto to enable internal scrolling -->
+      <div
+        class="w-full max-w-[400px] bg-[#141414] border border-[#222] rounded-2xl p-8 shadow-2xl relative z-10 fade-in ring-1 ring-white/5 max-h-[calc(100vh-150px)] overflow-y-auto"
+      >
+        <!-- Login Form -->
+        <div id="login-form">
+          <div class="text-center mb-6">
+            <h1 class="text-xl font-semibold tracking-tight text-white mb-1.5">
+              Welcome back
+            </h1>
+            <p class="text-secondary text-base">Sign in to your account</p>
+          </div>
+
+          <!-- Session Form -->
+          <form
+            onsubmit="
+              event.preventDefault();
+              handleLogin();
+            "
+            class="space-y-4"
+            action=''
+          >
+            <div class="space-y-1.5">
+              <label
+                for="login-email"
+                class="block text-sm font-medium text-neutral-400"
+                >Email address</label
+              >
+              <div class="relative group">
+                <i
+                  data-lucide="mail"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors"
+                  stroke-width="1.5"
+                ></i>
+                <input
+                  type="email"
+                  id="login-email"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="name@example.com"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label
+                  for="login-password"
+                  class="block text-sm font-medium text-neutral-400"
+                  >Password</label
+                >
+                <a
+                  href="#"
+                  class="text-xs text-neutral-500 hover:text-white transition-colors"
+                  >Forgot?</a
+                >
+              </div>
+              <div class="relative group">
+                <i
+                  data-lucide="lock"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors"
+                  stroke-width="1.5"
+                ></i>
+                <input
+                  type="password"
+                  id="login-password"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              id="login-btn"
+              type="submit"
+              class="w-full h-10 bg-white hover:bg-neutral-200 text-black font-medium rounded-lg text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            >
+              <span>Sign In</span>
+              <i
+                data-lucide="arrow-right"
+                class="w-4 h-4"
+                stroke-width="1.5"
+              ></i>
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-[#262626]"></div>
+            </div>
+            <div
+              class="relative flex justify-center text-[10px] uppercase tracking-wider font-medium"
+            >
+              <span class="bg-[#141414] px-3 text-neutral-500"
+                >Or continue with</span
+              >
+            </div>
+          </div>
+
+          <!-- Google OAuth -->
+          <button
+            class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              ></path>
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              ></path>
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              ></path>
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              ></path>
+            </svg>
+            Google
+          </button>
+
+          <div class="mt-6 text-center">
+            <p class="text-sm text-neutral-500">
+              Don't have an account?
+              <button
+                onclick="toggleAuth('register')"
+                class="text-white hover:text-neutral-300 font-medium transition-colors ml-1"
+              >
+                Sign up
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-form" class="hidden-form">
+          <div class="text-center mb-6">
+            <h1 class="text-xl font-semibold tracking-tight text-white mb-1.5">
+              Create an account
+            </h1>
+            <p class="text-secondary text-base">
+              Join StreamTube to start watching
+            </p>
+          </div>
+
+          <form
+            onsubmit="
+              event.preventDefault();
+              handleRegister();
+            "
+            class="space-y-4"
+          >
+            <!-- Username -->
+            <div class="space-y-1.5">
+              <label
+                for="reg-username"
+                class="block text-sm font-medium text-neutral-400"
+                >Username</label
+              >
+              <div class="relative group">
+                <i
+                  data-lucide="user"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors"
+                  stroke-width="1.5"
+                ></i>
+                <input
+                  type="text"
+                  id="reg-username"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="Display name"
+                />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="space-y-1.5">
+              <label
+                for="reg-email"
+                class="block text-sm font-medium text-neutral-400"
+                >Email address</label
+              >
+              <div class="relative group">
+                <i
+                  data-lucide="mail"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors"
+                  stroke-width="1.5"
+                ></i>
+                <input
+                  type="email"
+                  id="reg-email"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg pl-10 pr-4 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="name@example.com"
+                />
+              </div>
+            </div>
+
+            <!-- Password Grid -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1.5">
+                <label
+                  for="reg-password"
+                  class="block text-sm font-medium text-neutral-400"
+                  >Password</label
+                >
+                <input
+                  type="password"
+                  id="reg-password"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg px-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label
+                  for="reg-confirm"
+                  class="block text-sm font-medium text-neutral-400"
+                  >Confirm</label
+                >
+                <input
+                  type="password"
+                  id="reg-confirm"
+                  required=""
+                  class="w-full h-10 bg-[#0A0A0A] border border-[#262626] rounded-lg px-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-all shadow-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <!-- Primary CTA -->
+            <button
+              id="register-btn"
+              type="submit"
+              class="w-full h-10 bg-white hover:bg-neutral-200 text-black font-medium rounded-lg text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            >
+              <span>Create Account</span>
+              <i
+                data-lucide="chevron-right"
+                class="w-4 h-4"
+                stroke-width="1.5"
+              ></i>
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-[#262626]"></div>
+            </div>
+            <div
+              class="relative flex justify-center text-[10px] uppercase tracking-wider font-medium"
+            >
+              <span class="bg-[#141414] px-3 text-neutral-500"
+                >Or register with</span
+              >
+            </div>
+          </div>
+
+          <!-- Google OAuth -->
+          <button
+            class="w-full h-10 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] hover:border-[#444] text-white transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 group"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              ></path>
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              ></path>
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              ></path>
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              ></path>
+            </svg>
+            Google
+          </button>
+
+          <div class="mt-6 text-center">
+            <p class="text-sm text-neutral-500">
+              Already have an account?
+              <button
+                onclick="toggleAuth('login')"
+                class="text-white hover:text-neutral-300 font-medium transition-colors ml-1"
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Simple Footer -->
+    <footer
+      class="w-full py-6 text-center fixed bottom-0 left-0 pointer-events-none z-0"
+    >
+      <p class="text-xs text-neutral-700">
+        © 2026 StreamTube. All rights reserved.
+      </p>
+    </footer>
+
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons();
+
+      // View Toggling Logic
+      function toggleAuth(view) {
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+
+        // Add fade out effect
+        if (view === "register") {
+          loginForm.style.opacity = "0";
+          setTimeout(() => {
+            loginForm.classList.add("hidden-form");
+            registerForm.classList.remove("hidden-form");
+            registerForm.classList.add("fade-in");
+            registerForm.style.opacity = "1";
+          }, 200);
+        } else {
+          registerForm.style.opacity = "0";
+          setTimeout(() => {
+            registerForm.classList.add("hidden-form");
+            loginForm.classList.remove("hidden-form");
+            loginForm.classList.add("fade-in");
+            loginForm.style.opacity = "1";
+          }, 200);
+        }
+      }
+
+      // Mock Loading States
+      function setLoading(btnId, isLoading) {
+        const btn = document.getElementById(btnId);
+
+        if (isLoading) {
+          btn.disabled = true;
+          const originalContent = btn.innerHTML;
+          btn.setAttribute("data-original", originalContent);
+          btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-black"></i>`;
+          lucide.createIcons();
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = btn.getAttribute("data-original");
+          lucide.createIcons();
+        }
+      }
+
+      function handleLogin() {
+        const btn = document.getElementById("login-btn");
+        setLoading("login-btn", true);
+
+        // Simulate API call
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-green-600"></i>`;
+          lucide.createIcons();
+
+          setTimeout(() => {
+            // Reset for demo
+            setLoading("login-btn", false);
+          }, 1500);
+        }, 1000);
+      }
+
+      function handleRegister() {
+        const btn = document.getElementById("register-btn");
+        setLoading("register-btn", true);
+
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-green-600"></i>`;
+          lucide.createIcons();
+
+          setTimeout(() => {
+            // Reset for demo
+            setLoading("register-btn", false);
+          }, 1500);
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
