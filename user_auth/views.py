@@ -1,27 +1,24 @@
+import random
+
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth import logout
-from django.http import HttpRequest, HttpResponse
-from django.core.mail import EmailMultiAlternatives
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth import login
 from django.core.mail import send_mail
 
+from .models import EmailOTP
 
 User = get_user_model()
 
 
-import random
-from .models import EmailOTP
-
 def send_otp_email(request, user):
     code = str(random.randint(100000, 999999))
 
-    # 2️⃣ OTP ni DB ga saqlash
     otp = EmailOTP.objects.create(user=user, code=code)
 
-    # 3️⃣ Email matni (plain text)
     subject = "StreamTube - Tasdiqlash Code"
     message = (
         f"Assalomu alaykum, {user.username}!\n\n"
@@ -43,7 +40,6 @@ def send_otp_email(request, user):
         )
 
         if sent == 0:
-            # Agar email yuborilmasa, DB dagi OTP ni o‘chirish
             otp.delete()
             return render(request, 'register.html', {
                 "view": "register",
@@ -51,20 +47,22 @@ def send_otp_email(request, user):
             })
 
     except Exception as e:
-        # Xatolik yuz bersa, DB dagi OTP ni o‘chirish va xabar berish
         otp.delete()
-        print("Email yuborishda xato:", e)
         return render(request, 'register.html', {
             "view": "register",
             "Errors": f"Email yuborishda xato: {str(e)}"
         })
 
-    # 4️⃣ Hammasi muvaffaqiyatli bo‘lsa, True qaytarish
     return True
 
 
-
 class AuthUserLogin(View):
+    
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("home")
+        return super().dispatch(request, *args, **kwargs)
+    
     def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, 'login-register.html', context={"view": 'login'})
     
@@ -74,19 +72,16 @@ class AuthUserLogin(View):
         password = request.POST.get('password')
         
         if not email or not password:
-            print('ha 1')
             return render(request, 'login-register.html', context={"view": "login", "Errors": "Email yoki Parol xato kiritildi"})
         
         user = authenticate(request, email=email, password=password)
         
         
         if not user:
-            print(user)
-            print('ha 2')
             return render(request, 'login-register.html', context={"Errors": "Email yoki Parol xato kiritildi", "view": "login"})
         
         if user:
-            request.session.flush()  # eski session tozalash
+            request.session.flush()  
             request.session["otp_user_id"] = user.id
 
             send_otp_email(request, user)
@@ -100,6 +95,12 @@ class AuthUserLogin(View):
 
 
 class AuthUserRegister(View):
+    
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("home")
+        return super().dispatch(request, *args, **kwargs)
+    
     def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, 'login-register.html', {"view": "register"})
     
@@ -131,13 +132,35 @@ class AuthUserRegister(View):
         
 
 class AuthUserVerify(View):
+    
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("home")
+
+        if not request.session.get("otp_user_id"):
+            return redirect("login")
+
+        return super().dispatch(request, *args, **kwargs)
+    
+    
     def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, 'verify.html')
     
-    def post(self, request: HttpRequest) -> HttpResponse:
+    def post(self, request: HttpRequest) -> HttpResponse | JsonResponse:
         
-        code = request.POST.get('code', '')
+        code = request.POST.get('code')
         user_id = request.session.get("otp_user_id")
+        resend = request.POST.get('resend')
+        
+        try: 
+            user = User.objects.get(id=user_id)
+        except:
+            return redirect('register')
+        
+        if resend:
+            send_otp_email(request, user)
+            return JsonResponse({"message": "Verification code sent successfully"})
+        
         
         if not code.isdigit():
             return render(request, "verify.html", {
@@ -164,14 +187,16 @@ class AuthUserVerify(View):
         otp.is_used = True
         user = User.objects.get(id=user_id)
         login(request, user)
+        EmailOTP.objects.filter(user=user).delete()
         otp.save()
         return redirect("home")
+
     
-    
-    
-    
-    
-def logout_view(request):
-    logout(request)          # 🔐 session + userni tozalaydi
-    request.session.flush()  # 🔥 OTP session ham o‘chadi
+def logout_view(request: HttpRequest):
+    logout(request)
+    request.session.flush()
     return redirect("login")
+
+
+# def check_user_authenticate_api(request: HttpRequest) -> JsonResponse:
+#     pass

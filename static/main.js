@@ -64,12 +64,28 @@ function setupMobileSearch() {
 // Video Upload Logic
 let selectedFile = null;
 
+function hasSessionId() {
+  return document.cookie
+    .split("; ")
+    .some(row => row.startsWith("sessionid="));
+}
+
+
+
 function setupVideoUpload() {
   const createBtn = document.getElementById("create-video-btn");
   const modal = document.getElementById("video-upload-modal");
 
   if (createBtn && modal) {
     createBtn.addEventListener("click", () => {
+      
+      if (!window.IS_AUTHENTICATED) {
+      window.location.href = "/auth/login/";
+      console.log(window.IS_AUTHENTICATED);
+      
+      return;
+    }
+
       modal.classList.remove("hidden");
     });
 

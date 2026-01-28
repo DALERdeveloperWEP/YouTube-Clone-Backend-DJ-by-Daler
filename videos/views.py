@@ -1,5 +1,5 @@
 from uuid import uuid4
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -79,6 +79,10 @@ class HomePage(View):
 
 
     def post(self, request: HttpRequest) -> JsonResponse:
+        
+        if not request.user.is_authenticated:
+            return redirect("login")
+        
         ALLOWED_VIDEO_TYPES = [
             "video/mp4",
             "video/mkv",
@@ -89,10 +93,10 @@ class HomePage(View):
 
         ALLOWED_IMAGE_TYPES = [
             "image/jpeg",
-            "image/png",    
-            "image/webp",   
-            "image/gif",    
-            "image/svg+xml" 
+            "image/png",
+            "image/webp",
+            "image/gif",
+            "image/svg+xml"
         ]
         user = User.objects.filter(id=2).first()
         video = request.FILES.get("video")
@@ -181,6 +185,7 @@ class HomePage(View):
             result[cat] = "save successful" if cat in existing_category_names else "not found"
         
         return render(request, 'index.html', context=get_videos_home_page())
+
 
 class VideoDetailPage(View):
     def get(self, request: HttpRequest, slug: str) -> HttpResponse:

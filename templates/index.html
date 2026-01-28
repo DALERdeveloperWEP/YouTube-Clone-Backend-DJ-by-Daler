@@ -633,7 +633,9 @@
         <div class="p-6">
           <!-- Step Indicator -->
           <div class="flex items-center justify-center mb-8">
+
             <div class="flex items-center gap-2">
+
               <div id="step1-indicator" class="flex items-center gap-2">
                 <div
                   class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold"
@@ -642,6 +644,7 @@
                 </div>
                 <span class="text-sm text-white font-medium">Upload</span>
               </div>
+
               <div class="w-16 h-0.5 bg-white/10"></div>
               <div id="step2-indicator" class="flex items-center gap-2">
                 <div
@@ -651,7 +654,9 @@
                 </div>
                 <span class="text-sm text-white/50 font-medium">Details</span>
               </div>
+
             </div>
+            
           </div>
 
           <!-- Step 1: File Upload -->
@@ -670,6 +675,7 @@
                     class="text-blue-500"
                   ></iconify-icon>
                 </div>
+
                 <div>
                   <p class="text-lg font-medium text-white mb-2">
                     Drag and drop video files to upload
@@ -678,6 +684,7 @@
                     Your videos will be private until you publish them.
                   </p>
                 </div>
+
                 <button
                   onclick="document.getElementById('fileInput').click()"
                   class="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
@@ -754,6 +761,7 @@
                 Next
               </button>
             </div>
+
           </div>
 
           <!-- Step 2: Video Details -->
@@ -882,11 +890,19 @@
               </button>
             </div>
           </div>
+
         </div>
+
       </div>
+
     </div>
 
     <!-- Scripts -->
+
+    <script>
+      window.IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
+    </script>
+
     <script src='{% static "main.js" %}'></script>
 
   </body>
