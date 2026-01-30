@@ -295,51 +295,15 @@
           <!-- Category Chips -->
           <div
             class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-sm px-4 py-3 border-b border-white/5 flex gap-3 overflow-x-auto no-scrollbar w-full">
-            <button
-              class="bg-white text-black font-semibold px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              All
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Design
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Development
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Artificial Intelligence
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Music
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Gaming
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Podcasts
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Live
-            </button>
-            <button
-              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-            >
-              Gadgets
-            </button>
+              {% for category in categories %}
+              
+                <button
+                  class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+                >
+                  {{ category }}
+                </button>
+
+              {% endfor %}
           </div>
 
           <!-- Video Grid -->

@@ -75,7 +75,9 @@ def get_video_detail(slug: str):
 @method_decorator(csrf_exempt, name='dispatch')
 class HomePage(View):
     def get(self, request: HttpRequest) -> HttpResponse:
-        return render(request, 'index.html', context={"videos": get_videos_home_page()})
+        all_categories = [category.name for category in Category.objects.all()]
+        
+        return render(request, 'index.html', context={"videos": get_videos_home_page(), "categories": all_categories})
 
 
     def post(self, request: HttpRequest) -> JsonResponse:
@@ -103,11 +105,7 @@ class HomePage(View):
         thumbnail = request.FILES.get('thumbnail')
         title = request.POST.get('title')
         description = request.POST.get('description')
-        # category = request.body.get('category')
-        categories = [
-            'Development',
-            'Code'
-        ]
+        categories = request.body.get('category')
         
         if not title and not  description and not categories:
             return JsonResponse({'Erros': "Bad Request"}, status=400)
