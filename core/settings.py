@@ -48,10 +48,10 @@ except Exception as e:
 match config('DJANGO_ENV', default=False):
     case True | 'development':
         DEBUG = True
-        ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html']
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html', '*']
     case False | 'production':
         DEBUG = False
-        ALLOWED_HOSTS = ['yourdomain.com', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html']
+        ALLOWED_HOSTS = ['yourdomain.com', 'http://127.0.0.1:5501/', 'http://127.0.0.1:5501/index.html', '*']
 
 # Application definition
 
