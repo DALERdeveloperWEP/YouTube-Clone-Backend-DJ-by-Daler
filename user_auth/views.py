@@ -81,7 +81,6 @@ class AuthUserLogin(View):
             return render(request, 'login-register.html', context={"Errors": "Email yoki Parol xato kiritildi", "view": "login"})
         
         if user:
-            request.session.flush()  
             request.session["otp_user_id"] = user.id
 
             send_otp_email(request, user)
@@ -134,7 +133,7 @@ class AuthUserRegister(View):
 class AuthUserVerify(View):
     
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and not request.session.get("otp_user_id"):
             return redirect("home")
 
         if not request.session.get("otp_user_id"):
@@ -186,7 +185,8 @@ class AuthUserVerify(View):
             
         otp.is_used = True
         user = User.objects.get(id=user_id)
-        login(request, user)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        request.session.pop("otp_user_id", None)
         EmailOTP.objects.filter(user=user).delete()
         otp.save()
         return redirect("home")
