@@ -65,10 +65,10 @@ INSTALLED_APPS = [
     
     'django.contrib.sites',
 
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     
     'users.apps.UsersConfig',
     'videos.apps.VideosConfig',
@@ -90,17 +90,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        
-        'APP': {
-            'client_id': config('client_id', cast=str),
-            'secret': config('client_secret', cast=str),
-            'key': ''
-        }
-    }
-}
 
+
+SITE_ID = 1
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
@@ -125,19 +117,33 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
+
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='video_upload_db'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 
-AUTHENTICATION_BACKENDS = [
-    'user_auth.backends.UsernameOrEmailBackend',
-]
+import os
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('DB_USER'),
+#         'PASSWORD': os.environ.get('DB_PASSWORD'),
+#         'HOST': os.environ.get('DB_HOST'),
+#         'PORT': os.environ.get('DB_PORT'),
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         },
+#     }
+# }
+
 
 
 # Password validation
@@ -171,7 +177,7 @@ AUTHENTICATION_BACKENDS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
 
@@ -192,7 +198,7 @@ match DEBUG:
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-SITE_ID = 1
+
 
 
 # Default primary key field type
@@ -213,8 +219,26 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 
 
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_REQUIRED = True
+SITE_ID = 1
 
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+# Allauth yangi versiya sozlamalari
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Email tasdiqlamasdan kirish
+
+# Google orqali kirgan foydalanuvchini signup page ga yo'naltirilmasligi uchun
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Avtomatik signup
+SOCIALACCOUNT_EMAIL_REQUIRED = False  # Email talab qilinmasin
+SOCIALACCOUNT_QUERY_EMAIL = True  # Email so'ralsin
+ACCOUNT_LOGOUT_ON_GET = True  # GET request bilan logout
+
+# Signup formadan qo'shimcha ma'lumot so'ralmasligi uchun
+SOCIALACCOUNT_FORMS = {}
+
+# Google orqali kirgandan keyin qaerga yo'naltirilishi
+LOGIN_REDIRECT_URL = '/'  # Yoki 'home'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Agar yangi user bo'lsa, avtomatik yaratilishi
+SOCIALACCOUNT_ADAPTER = 'user_auth.adapters.CustomSocialAccountAdapter'
