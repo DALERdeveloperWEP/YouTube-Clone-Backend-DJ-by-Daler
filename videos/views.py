@@ -1,3 +1,4 @@
+import json
 from uuid import uuid4
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -38,13 +39,14 @@ def format_duration(seconds: int) -> str:
 
 def get_videos_home_page():
     videos = []
-    get_videos = Video.objects.all()    
+    get_videos = Video.objects.all()
     for video in get_videos:
         user_channel = Channel.objects.filter(user=video.user).first()
         videos.append({
             "title": video.title,
+            "slug": video.slug,
             "description": video.description,
-            "public_url": video.public_url,
+            "thumbnail": video.thumbnail,
             "channel_name": user_channel.name,
             "channel_logo": user_channel.avatar,
             "uploaded_at": video.uploaded_at,
@@ -55,17 +57,20 @@ def get_videos_home_page():
 
 
 def get_video_detail(slug: str):
-    get_videos = Video.objects.filter(slug=slug)
-    user_channel = Channel.objects.filter(user=get_videos.user.id)
+    get_videos = Video.objects.filter(slug=slug).first()
+    user_channel = Channel.objects.filter(user=get_videos.user.id).first()
+    subscribers = user_channel.subscribers.all()
     video = {
         "title": get_videos.title,
         "description": get_videos.description,
         "public_url": get_videos.public_url,
+        "thumbnail": get_videos.thumbnail,
         "channel_name": user_channel.name,
         "channel_logo": user_channel.avatar,
         "uploaded_at": get_videos.uploaded_at,
         "views": get_videos.views,
         "category": get_videos.category,
+        "total_subscribers": len(subscribers),
     }
 
     return video
@@ -75,9 +80,21 @@ def get_video_detail(slug: str):
 @method_decorator(csrf_exempt, name='dispatch')
 class HomePage(View):
     def get(self, request: HttpRequest) -> HttpResponse:
+        
         all_categories = [category.name for category in Category.objects.all()]
         
-        return render(request, 'index.html', context={"videos": get_videos_home_page(), "categories": all_categories})
+        if request.user.is_authenticated:
+            get_user_channel = Channel.objects.filter(user=request.user).first()
+        else:
+            get_user_channel = Channel.objects.none()  # bo'sh QuerySet
+        
+        
+        return render(request, 'index.html', context={
+            "videos": get_videos_home_page(), 
+            "categories": all_categories, 
+            "user": request.user,
+            "channel": get_user_channel,
+        })
 
 
     def post(self, request: HttpRequest) -> JsonResponse:
@@ -105,9 +122,12 @@ class HomePage(View):
         thumbnail = request.FILES.get('thumbnail')
         title = request.POST.get('title')
         description = request.POST.get('description')
-        categories = request.body.get('category')
+        raw = request.POST.get("categories")
+        categories = json.loads(raw) if raw else []
         
-        if not title and not  description and not categories:
+        print(categories)
+        
+        if not title or not categories:
             return JsonResponse({'Erros': "Bad Request"}, status=400)
         
         if not video:
@@ -182,15 +202,27 @@ class HomePage(View):
         for cat in categories:
             result[cat] = "save successful" if cat in existing_category_names else "not found"
         
-        return render(request, 'index.html', context=get_videos_home_page())
-
+        all_categories = [category.name for category in Category.objects.all()]
+        
+        if request.user.is_authenticated:
+            get_user_channel = Channel.objects.filter(user=request.user).first()
+        else:
+            get_user_channel = Channel.objects.none()  # bo'sh QuerySet
+        
+        
+        return render(request, 'index.html', context={
+            "videos": get_videos_home_page(), 
+            "categories": all_categories, 
+            "user": request.user,
+            "channel": get_user_channel,
+        })
+    
 
 class VideoDetailPage(View):
-    def get(self, request: HttpRequest, slug: str) -> HttpResponse:
-        return render(request, 'watch.html')
+    def get(self, request: HttpRequest, slug: str) -> HttpResponse:        
+        return render(request, 'watch.html', context={'video': get_video_detail(slug)})
 
 
     def post(self, request: HttpRequest) -> HttpResponse:
         pass
  
-

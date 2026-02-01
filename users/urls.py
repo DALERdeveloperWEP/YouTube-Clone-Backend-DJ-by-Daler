@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import Test02
+from .views import ChannelView
 
 
 urlpatterns = [
-    path('', Test02.as_view())
+    path('channel/', ChannelView.as_view(), name='create_channel')
 ]
