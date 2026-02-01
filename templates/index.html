@@ -1,4 +1,5 @@
 {% load static %}
+{% load time_ego %}
 <!doctype html>
 <html lang="en" class="dark">
   <head>
@@ -24,7 +25,8 @@
     <!-- Icons -->
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href='{% static "style.css" %}' />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="flex flex-col h-screen overflow-hidden">
     <!-- Header -->
@@ -35,7 +37,7 @@
       <div class="flex items-center gap-4 w-full md:w-auto z-20" id="logo-area">
         <button
           id="menu-btn"
-          class="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors"
+          class="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors hidden min-[560px]:block"
         >
           <iconify-icon
             icon="solar:hamburger-menu-linear"
@@ -98,7 +100,8 @@
       <!-- Mobile Search Bar (Hidden by default) -->
       <div
         id="mobile-search-bar"
-        class="hidden absolute inset-0 bg-[#09090b] z-30 px-2 items-center gap-2 md:hidden">
+        class="hidden absolute inset-0 bg-[#09090b] z-30 px-2 items-center gap-2 md:hidden"
+      >
         <button id="search-back-btn" class="p-2 rounded-full hover:bg-white/10">
           <iconify-icon
             icon="solar:arrow-left-linear"
@@ -128,34 +131,60 @@
         >
           <iconify-icon icon="solar:magnifer-linear" width="22"></iconify-icon>
         </button>
-        <button
-          id="create-video-btn"
-          class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors hidden sm:flex"
-        >
-          <iconify-icon
-            icon="solar:videocamera-add-linear"
-            width="22"
-            stroke-width="1.5"
-            class="text-white/70"
-          ></iconify-icon>
-        </button>
-        <button
-          class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors relative"
-        >
-          <iconify-icon
-            icon="solar:bell-linear"
-            width="22"
-            stroke-width="1.5"
-            class="text-white/70"
-          ></iconify-icon>
-          <span
-            class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#09090b]"
-          ></span>
-        </button>
-        <div
-          class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full ml-2 cursor-pointer border border-white/10"
-        ></div>
+
+        <div class="hidden sm:flex items-center gap-2">
+          <button
+            id="create-video-btn"
+            class="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <i data-lucide="video" class="w-6 h-6 text-white"></i>
+          </button>
+          <button
+            class="p-2 hover:bg-white/10 rounded-full transition-colors mr-2"
+          >
+            <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+          </button>
+
+          {% if user.is_authenticated %}
+          
+            {% if channel %}
+            
+              <button class="flex items-center gap-3 pl-4 border-l border-white/10 ml-1 group outline-none">
+                  <img src="{{ channel.avatar }}" alt="Alex Chen" class="w-8 h-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-white/10 transition-all">
+                  <span class="text-sm font-medium text-white hidden md:block group-hover:text-gray-200 transition-colors">{{ channel.name }}</span>
+                  <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors"></i>
+              </button>
+
+            {% else %}
+
+              <button id="create-channel-btn" class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full ml-2 cursor-pointer hover:opacity-90 transition-opacity">
+                {{ user.username|slice:'0:1'|upper }}
+              </button>
+
+            {% endif %}
+
+          {% else %}
+
+            <div class="flex items-center gap-3 border-l border-white/10 pl-3">
+              <button
+                class="text-white hover:bg-white/10 font-medium rounded-full px-4 py-2 text-sm transition-colors border border-transparent hover:border-white/10 whitespace-nowrap"
+              >
+                Sign In
+              </button>
+              <button
+                class="bg-white text-black hover:bg-gray-200 font-medium rounded-full px-4 py-2 text-sm transition-colors shadow-lg shadow-white/5 whitespace-nowrap"
+              >
+                Sign Up
+              </button>
+
+            </div>
+
+          {% endif %}
+
+        </div>
+
       </div>
+
     </header>
 
     <!-- Main Container -->
@@ -169,7 +198,8 @@
       <!-- Sidebar -->
       <aside
         id="sidebar"
-        class="fixed lg:static top-14 left-0 h-[calc(100vh-3.5rem)] w-60 bg-[#09090b] border-r border-white/5 overflow-y-auto z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 pb-4">
+        class="fixed lg:static top-14 left-0 h-[calc(100vh-3.5rem)] w-60 bg-[#09090b] border-r border-white/5 overflow-y-auto z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 pb-4"
+      >
         <!-- Main Nav -->
         <div class="p-3 space-y-1">
           <a
@@ -294,271 +324,65 @@
         <div class="max-w-[2000px] mx-auto">
           <!-- Category Chips -->
           <div
-            class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-sm px-4 py-3 border-b border-white/5 flex gap-3 overflow-x-auto no-scrollbar w-full">
-              {% for category in categories %}
-              
-                <button
-                  class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
-                >
-                  {{ category }}
-                </button>
-
-              {% endfor %}
+            class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-sm px-4 py-3 border-b border-white/5 flex gap-3 overflow-x-auto no-scrollbar w-full"
+          >
+          {% for category in categories %}
+          
+            <button
+              class="bg-[#27272a] text-white hover:bg-[#3f3f46] px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors"
+            >
+              {{ category }}
+            </button>
+            
+          {% endfor %}
           </div>
 
           <!-- Video Grid -->
           <div class="p-4 sm:p-6 video-grid">
+            
             <!-- Video Card 1 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=1"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
+            {% for video in videos %} 
+              <div class="group flex flex-col gap-3">
+                <a
+                  href="{% url 'video_detail' video.slug %}"
+                  class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
                 >
-                  12:45
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
                   <img
-                    src="https://images.unsplash.com/photo-1669837245415-02f0643ea35d?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
+                    src="{{ video.thumbnail }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    alt="Thumbnail"
                   />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=1"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >Building a Design System in 2024</a
+                  <div
+                    class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
                   >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                    {{ video.duration }}
+                  </div>
+                </a>
+                <div class="flex gap-3 items-start">
+                  <a href="channel.html" class="shrink-0">
+                    <img
+                      src="{{ video.channel_logo }}"
+                      class="w-9 h-9 rounded-full object-cover mt-0.5"
+                    />
+                  </a>
+                  <div class="flex flex-col gap-0.5">
                     <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >Vercel</a
+                      href="watch.html?v=1"
+                      class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
+                      >{{ video.title }}</a
                     >
-                    <span>124K views • 2 days ago</span>
+                    <div class="text-xs text-white/50 flex flex-col mt-0.5">
+                      <a
+                        href="channel.html"
+                        class="hover:text-white transition-colors"
+                        >{{ video.channel_name }}</a
+                      >
+                      <span>{{ video.views }} views • {{ video.uploaded_at|yt_ago }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Video Card 2 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=2"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                >
-                  08:30
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
-                  />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=2"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >The Future of AI Interfaces</a
-                  >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
-                    <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >Linear</a
-                    >
-                    <span>89K views • 5 hours ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Video Card 3 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=3"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                >
-                  15:20
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
-                  />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=3"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >Minimalist Desk Setup Tour</a
-                  >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
-                    <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >Tech Focus</a
-                    >
-                    <span>1.2M views • 1 month ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Video Card 4 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=4"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                >
-                  24:10
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
-                  />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=4"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >Coding a SaaS in 24 Hours</a
-                  >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
-                    <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >DevDaily</a
-                    >
-                    <span>450K views • 1 week ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Video Card 5 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=5"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                >
-                  45:00
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
-                  />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=5"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >Abstract 3D Art with Blender</a
-                  >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
-                    <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >Polygon</a
-                    >
-                    <span>67K views • 1 day ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Video Card 6 -->
-            <div class="group flex flex-col gap-3">
-              <a
-                href="watch.html?v=6"
-                class="relative rounded-xl overflow-hidden aspect-video-card bg-[#18181b] block"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=1000&auto=format&fit=crop"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  alt="Thumbnail"
-                />
-                <div
-                  class="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                >
-                  18:05
-                </div>
-              </a>
-              <div class="flex gap-3 items-start">
-                <a href="channel.html" class="shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop"
-                    class="w-9 h-9 rounded-full object-cover mt-0.5"
-                  />
-                </a>
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    href="watch.html?v=6"
-                    class="text-sm font-semibold text-white leading-tight line-clamp-2 md:text-base"
-                    >Cinematic Color Grading Tutorial</a
-                  >
-                  <div class="text-xs text-white/50 flex flex-col mt-0.5">
-                    <a
-                      href="channel.html"
-                      class="hover:text-white transition-colors"
-                      >Film School</a
-                    >
-                    <span>22K views • 3 days ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {% endfor %}
 
           </div>
 
@@ -568,13 +392,179 @@
       
     </div>
 
+    <!-- Create Channel Modal -->
+    <div
+      id="create-channel-modal"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 p-4"
+    >
+      <div
+        class="w-full max-w-2xl bg-[#18181b] rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[90vh]"
+      >
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between px-6 py-4 border-b border-white/10"
+        >
+          <h2 class="text-xl font-semibold text-white">Create Your Channel</h2>
+          <button
+            id="close-channel-modal"
+            class="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors"
+          >
+            <iconify-icon
+              icon="solar:close-circle-linear"
+              width="24"
+              class="text-white/70"
+            ></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form method="POST" action="{% url 'create_channel' %}" enctype="multipart/form-data" class="p-6 overflow-y-auto flex-1 space-y-6">
+          {% csrf_token %}
+          
+          <!-- Channel Name -->
+          <div>
+            <label class="block text-sm font-medium text-white mb-2"
+              >Channel Name *</label
+            >
+            <input
+              type="text"
+              name="name"
+              id="channelName"
+              placeholder="Enter your channel name"
+              maxlength="20"
+              required
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-500 focus:outline-none transition-colors"
+            />
+            <p class="text-xs text-white/50 mt-1">
+              <span id="nameCount">0</span>/20
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-white mb-2"
+              >Description</label
+            >
+            <textarea
+              name="description"
+              id="channelDescription"
+              placeholder="Tell viewers about your channel"
+              maxlength="1000"
+              rows="4"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-white/30 focus:border-blue-500 focus:outline-none transition-colors resize-none"
+            ></textarea>
+            <p class="text-xs text-white/50 mt-1">
+              <span id="descriptionCount">0</span>/1000
+            </p>
+          </div>
+
+          <!-- Avatar Upload -->
+          <div>
+            <label class="block text-sm font-medium text-white mb-2"
+              >Channel Avatar</label
+            >
+            <div class="flex items-center gap-4">
+              <div class="relative">
+                <img
+                  id="avatarPreview"
+                  src="https://i.pinimg.com/originals/9f/16/72/9f1672710cba6bcb0dfd93201c6d4c00.jpg"
+                  alt="Avatar Preview"
+                  class="w-24 h-24 rounded-full object-cover border-2 border-white/10"
+                />
+              </div>
+              <div class="flex-1">
+                <button
+                  type="button"
+                  onclick="document.getElementById('avatarInput').click()"
+                  class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors flex items-center gap-2"
+                >
+                  <iconify-icon icon="solar:gallery-add-linear" width="20"></iconify-icon>
+                  Choose Avatar
+                </button>
+                <input
+                  type="file"
+                  name="avatar"
+                  id="avatarInput"
+                  accept="image/*"
+                  class="hidden"
+                />
+                <p class="text-xs text-white/50 mt-2">
+                  Recommended: Square image, at least 800x800px
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banner Upload -->
+          <div>
+            <label class="block text-sm font-medium text-white mb-2"
+              >Channel Banner</label
+            >
+            <div class="space-y-3">
+              <div
+                onclick="document.getElementById('bannerInput').click()"
+                class="relative aspect-[6/1] bg-white/5 border-2 border-dashed border-white/20 rounded-lg overflow-hidden cursor-pointer hover:border-blue-500/50 hover:bg-white/10 transition-all group"
+              >
+                <img
+                  id="bannerPreview"
+                  src="https://preview.redd.it/jn8jyih8obj71.jpg?width=1060&format=pjpg&auto=webp&s=00093bf1491726eea4a752290353e0e169522b66"
+                  alt="Banner Preview"
+                  class="w-full h-full object-cover"
+                />
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div class="text-center">
+                    <iconify-icon icon="solar:gallery-add-bold" width="32" class="text-white mb-2"></iconify-icon>
+                    <p class="text-white font-medium">Change Banner</p>
+                  </div>
+                </div>
+              </div>
+              <input
+                type="file"
+                name="banner"
+                id="bannerInput"
+                accept="image/*"
+                class="hidden"
+              />
+              <p class="text-xs text-white/50">
+                Recommended: 2560x424px for best quality
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div
+            class="flex items-center justify-end gap-3 pt-4 border-t border-white/10"
+          >
+            <button
+              type="button"
+              id="cancel-channel-btn"
+              class="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-8 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+            >
+              <iconify-icon
+                icon="solar:add-circle-linear"
+                width="20"
+              ></iconify-icon>
+              Create Channel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Video Upload Modal -->
     <div
       id="video-upload-modal"
-      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 p-4">
+      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 p-4"
+    >
       <div
         id="uploadModal"
-        class="w-full max-w-4xl bg-[#18181b] rounded-2xl shadow-2xl border border-white/10 overflow-hidden"
+        class="w-full max-w-4xl bg-[#18181b] rounded-2xl shadow-2xl border border-white/10 flex flex-col max-h-[90vh]"
       >
         <!-- Modal Header -->
         <div
@@ -594,12 +584,10 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto flex-1">
           <!-- Step Indicator -->
           <div class="flex items-center justify-center mb-8">
-
             <div class="flex items-center gap-2">
-
               <div id="step1-indicator" class="flex items-center gap-2">
                 <div
                   class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold"
@@ -608,7 +596,6 @@
                 </div>
                 <span class="text-sm text-white font-medium">Upload</span>
               </div>
-
               <div class="w-16 h-0.5 bg-white/10"></div>
               <div id="step2-indicator" class="flex items-center gap-2">
                 <div
@@ -618,9 +605,7 @@
                 </div>
                 <span class="text-sm text-white/50 font-medium">Details</span>
               </div>
-
             </div>
-            
           </div>
 
           <!-- Step 1: File Upload -->
@@ -632,14 +617,14 @@
             >
               <div class="flex flex-col items-center gap-4">
                 <div
-                  class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center"
+                >
                   <iconify-icon
                     icon="solar:cloud-upload-bold"
                     width="40"
                     class="text-blue-500"
                   ></iconify-icon>
                 </div>
-
                 <div>
                   <p class="text-lg font-medium text-white mb-2">
                     Drag and drop video files to upload
@@ -648,7 +633,6 @@
                     Your videos will be private until you publish them.
                   </p>
                 </div>
-
                 <button
                   onclick="document.getElementById('fileInput').click()"
                   class="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
@@ -725,7 +709,6 @@
                 Next
               </button>
             </div>
-
           </div>
 
           <!-- Step 2: Video Details -->
@@ -777,20 +760,14 @@
                     multiple
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 focus:outline-none transition-colors"
                   >
-                    <option value="design">Design</option>
-                    <option value="development">Development</option>
-                    <option value="ai">Artificial Intelligence</option>
-                    <option value="music">Music</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="podcasts">Podcasts</option>
-                    <option value="gadgets">Gadgets</option>
+                    {% for category in categories %}
+                      <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
                   </select>
                   <p class="text-xs text-white/50 mt-1">
                     Hold Ctrl/Cmd to select multiple
                   </p>
                 </div>
-
-
               </div>
 
               <!-- Right Column: Thumbnail -->
@@ -828,7 +805,6 @@
                   accept="image/*"
                   class="hidden"
                 />
-
               </div>
             </div>
 
@@ -854,20 +830,112 @@
               </button>
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
 
     <!-- Scripts -->
 
     <script>
       window.IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
+      window.IS_CHANNEL={{ channel|yesno:"true,false" }}
     </script>
+    <script src="{% static 'main.js' %}"></script>
+    
+    
+    <nav
+      class="fixed bottom-0 left-0 right-0 bg-[#0f0f0f] border-t border-white/10 z-50 flex items-center justify-around h-16 max-[560px]:flex hidden pb-safe"
+    >
+      <a
+        href="#"
+        class="flex flex-col items-center justify-center gap-1 w-full h-full text-white"
+      >
+        <i data-lucide="home" class="w-6 h-6"></i>
+        <span class="text-[10px] font-medium tracking-wide">Home</span>
+      </a>
+      <a
+        href="#"
+        class="flex flex-col items-center justify-center gap-1 w-full h-full text-gray-400 hover:text-white transition-colors"
+      >
+        <i data-lucide="zap" class="w-6 h-6"></i>
+        <span class="text-[10px] font-medium tracking-wide">Shorts</span>
+      </a>
+      <button
+        id="mobile-create-btn"
+        class="flex flex-col items-center justify-center w-full h-full text-white hover:opacity-80 transition-opacity"
+      >
+        <div
+          class="w-10 h-10 rounded-full border border-white/20 bg-white/5 flex items-center justify-center"
+        >
+          <i data-lucide="plus" class="w-6 h-6"></i>
+        </div>
+      </button>
+      <a
+        href="#"
+        class="flex flex-col items-center justify-center gap-1 w-full h-full text-gray-400 hover:text-white transition-colors"
+      >
+        <i data-lucide="users" class="w-6 h-6"></i>
+        <span class="text-[10px] font-medium tracking-wide">Subscriptions</span>
+      </a>
 
-    <script src='{% static "main.js" %}'></script>
+      {% if user.is_authenticated %}
+          
+            {% if channel %}
+              <a
+                href="#"
+                class="flex flex-col items-center justify-center gap-1 w-full h-full text-gray-400 hover:text-white transition-colors"
+              >
+                <img
+                  src="{{ channel.avatar }}"
+                  alt="Profile"
+                  class="w-6 h-6 rounded-full object-cover ring-1 ring-white/20"
+                />
+                <span class="text-[10px] font-medium tracking-wide">{{ channel.name }}</span>
+              </a>
+
+            {% else %}
+
+              <button id="create-channel-btn-mobile" class="flex flex-col items-center justify-center gap-1 w-full h-full text-gray-400 hover:text-white transition-colors">
+                 <div class="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                    {{ user.username|slice:'0:1'|upper }}
+                 </div>
+                 <span class="text-[10px] font-medium tracking-wide">You</span>
+              </button>
+
+            {% endif %}
+
+          {% else %}
+
+            <a href="{% url "login" %}" class="flex flex-col items-center justify-center gap-1 w-full h-full text-gray-400 hover:text-white transition-colors">
+              <i data-lucide="user-circle-2" class="w-6 h-6"></i>
+              <span class="text-[10px] font-medium tracking-wide">Sign In</span>
+            </a>
+
+            </div>
+
+          {% endif %}
+      
+    </nav>
+
+    <script>
+      lucide.createIcons({
+        attrs: {
+          class: "text-gray-400",
+          "stroke-width": 1.5,
+        },
+      });
+
+      // Simple fix to ensure "Home" icon in bottom nav is white (active state)
+      // Check if nav exists before running to avoid errors if screen is large (though script runs regardless)
+      if (document.querySelector("nav a:first-child i")) {
+        document
+          .querySelector("nav a:first-child i")
+          .classList.remove("text-gray-400");
+        document
+          .querySelector("nav a:first-child i")
+          .classList.add("text-white");
+      }
+    </script>
 
   </body>
 </html>

@@ -1,4 +1,5 @@
 {% load static %}
+{% load time_ego %}
 <!doctype html>
 <html lang="en" class="dark">
   <head>
@@ -249,11 +250,11 @@
               <video
                 id="mainVideo"
                 class="absolute inset-0 w-full h-full object-contain"
-                poster="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1000&auto=format&fit=crop"
+                poster="{{ video.thumbnail }}"
                 playsinline
               >
                 <source
-                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                  src="{{ video.public_url }}"
                   type="video/mp4"
                 />
                 Your browser does not support the video tag.
@@ -464,7 +465,7 @@
             <h1
               class="text-xl font-bold tracking-tight mt-4 text-white line-clamp-2"
             >
-              Building a Design System in 2024
+              {{ video.title }}
             </h1>
 
             <!-- Actions Bar -->
@@ -474,7 +475,7 @@
               <div class="flex items-center gap-3">
                 <a href="channel.html">
                   <img
-                    src="https://images.unsplash.com/photo-1669837245415-02f0643ea35d?q=80&w=100&auto=format&fit=crop"
+                    src="{{ video.channel_logo }}"
                     class="w-10 h-10 rounded-full object-cover"
                   />
                 </a>
@@ -482,9 +483,9 @@
                   <a
                     href="channel.html"
                     class="font-semibold text-sm hover:text-white transition-colors"
-                    >Vercel</a
+                    >{{ video.channel_name }}</a
                   >
-                  <span class="text-xs text-white/50">124K subscribers</span>
+                  <span class="text-xs text-white/50">{{ video.total_subscribers }} subscribers</span>
                 </div>
                 <button
                   class="ml-4 bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
@@ -540,13 +541,11 @@
               class="mt-4 bg-[#27272a] p-3 rounded-xl cursor-pointer hover:bg-[#3f3f46] transition-colors"
             >
               <div class="flex gap-2 text-sm font-medium mb-1">
-                <span>124K views</span>
-                <span>2 days ago</span>
+                <span>{{ video.views }} views</span>
+                <span>{{ video.uploaded_at|yt_ago }}</span>
               </div>
               <p class="text-sm text-white/80 leading-relaxed">
-                In this video, we explore the fundamental principles of design
-                systems and how they scale within large organizations. We'll
-                cover tokens, components, and documentation.
+                {{ video.description }}
               </p>
             </div>
 
