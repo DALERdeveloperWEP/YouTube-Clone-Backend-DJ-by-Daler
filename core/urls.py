@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('videos.urls')),
     path('', include('users.urls')),
     path('', include('interactions.urls')),
+    path('', include('api.urls')),
 ]
 
 if settings.DEBUG:

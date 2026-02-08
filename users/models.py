@@ -26,8 +26,8 @@ class Subscriber(models.Model):
     subscribed_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('subscriber', 'channel') 
-        ordering = ['-subscribed_at'] 
+        unique_together = ('subscriber', 'channel')
+        ordering = ['-subscribed_at']
         
     def __str__(self):
-        return f"{self.subscriber.username} subscribed to {self.channel.username}"
+        return f"{self.subscriber.username} subscribed to {self.channel.name}"

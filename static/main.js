@@ -414,53 +414,70 @@ function getCSRFToken() {
 function submitVideo() {
   console.log("submitVideo started");
   if (!selectedFile) {
-    alert("Video tanlanmagan");
+    showToast("Video tanlanmagan", "error");
     return;
   }
-
+  
   const title = document.getElementById("videoTitle").value;
   const description = document.getElementById("videoDescription").value;
   const categories = Array.from(
     document.getElementById("videoCategory").selectedOptions,
   ).map((o) => o.value);
-
+  
   const thumbnailFile =
     document.getElementById("thumbnailInput").files[0] || null;
-
-  if (!title || categories.length === 0) {
-    alert("Title va category majburiy");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("video", selectedFile);
-  formData.append("title", title);
-  formData.append("description", description);
-  formData.append("categories", JSON.stringify(categories));
-  if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
-
-  fetch("http://localhost:8000/", {
-    method: "POST",
-    body: formData,
-  })
+    
+    if (!title || categories.length === 0) {
+      showToast("Title va category majburiy", "error");
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append("video", selectedFile);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("categories", JSON.stringify(categories));
+    if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
+    
+    closeModal()
+    // Show loading toast
+    const loadingToast = showToast("Loading...", "loading");
+    
+    fetch("http://localhost:8000/", {
+      method: "POST",
+      body: formData,
+    })
     .then(async (res) => {
+      // Remove loading toast
+      loadingToast.remove();
+      
       try {
         const data = await res.json();
         console.log("Uploaded:", data);
-        alert("Video uploaded successfully!");
-        closeModal();
+        
+        if (res.status === 201 || data.message === "Video created successfully") {
+          showToast(data.message || "Video created successfully", "success");
+          closeModal();
+          // Refresh DOM after a short delay
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          throw new Error(data.message || "Upload failed");
+        }
       } catch (err) {
         console.error("Backend JSON parse xatolik:", err);
-        alert("Upload tugadi, lekin backend JSON bermadi");
+        showToast(err.message || "Upload tugadi, lekin backend JSON bermadi", "error");
       }
     })
     .catch((err) => {
+      loadingToast.remove();
       console.error("Fetch xatolik:", err);
-      alert("Upload xatolik bilan tugadi");
+      showToast("Upload xatolik bilan tugadi", "error");
     });
-}
-
-function closeModal() {
+  }
+  
+  function closeModal() {
   // Reset form
   document.getElementById("videoTitle").value = "";
   document.getElementById("videoDescription").value = "";
@@ -471,4 +488,59 @@ function closeModal() {
   if (modal) {
     modal.classList.add("hidden");
   }
+}
+
+function showToast(message, type = 'success') {
+  const containerId = 'toast-container';
+  let container = document.getElementById(containerId);
+  if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.className = 'fixed top-5 right-5 z-50 flex flex-col items-end space-y-2 pointer-events-none';
+      document.body.appendChild(container); // Append to body
+  }
+
+  const toast = document.createElement('div');
+  
+  let bgClass = 'bg-blue-600';
+  let iconSvg = '';
+
+  if (type === 'success') {
+      bgClass = 'bg-green-600';
+      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  } else if (type === 'error') {
+      bgClass = 'bg-red-600';
+      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+  } else if (type === 'loading') {
+      bgClass = 'bg-blue-600';
+      iconSvg = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+  }
+
+  toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-lg text-white transform transition-all duration-300 translate-x-full ${bgClass} pointer-events-auto`;
+  toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+
+  container.appendChild(toast);
+
+  // Animate in
+  requestAnimationFrame(() => {
+      toast.classList.remove('translate-x-full');
+  });
+
+  // Auto remove for success/error
+  if (type !== 'loading') {
+      setTimeout(() => {
+          removeToast(toast);
+      }, 3000);
+  }
+
+  return {
+      remove: () => removeToast(toast)
+  };
+}
+
+function removeToast(toast) {
+  toast.classList.add('translate-x-full');
+  setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+  }, 300);
 }

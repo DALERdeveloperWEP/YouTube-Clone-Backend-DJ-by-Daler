@@ -166,16 +166,16 @@
           {% else %}
 
             <div class="flex items-center gap-3 border-l border-white/10 pl-3">
-              <button
+              <a href="{% url 'login' %}"
                 class="text-white hover:bg-white/10 font-medium rounded-full px-4 py-2 text-sm transition-colors border border-transparent hover:border-white/10 whitespace-nowrap"
               >
                 Sign In
-              </button>
-              <button
+              </a>
+              <a href="{% url 'register' %}"
                 class="bg-white text-black hover:bg-gray-200 font-medium rounded-full px-4 py-2 text-sm transition-colors shadow-lg shadow-white/5 whitespace-nowrap"
               >
                 Sign Up
-              </button>
+              </a>
 
             </div>
 

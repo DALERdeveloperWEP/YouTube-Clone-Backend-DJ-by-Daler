@@ -287,6 +287,13 @@
     </style>
   </head>
   <body>
+    <!-- Hidden element to store backend error message for JS to pick up -->
+    <div
+      id="backend-error-data"
+      data-error="{{ error|default:'Errors' }}"
+      style="display: none"
+    ></div>
+
     <div class="logo">
       <div class="logo-icon"></div>
       <span>StreamTube</span>
@@ -383,12 +390,8 @@
         <button type="submit" class="submit-btn" id="submitBtn" disabled>
           Verify
         </button>
-        {{ Errors }}
-        <!-- Display Django error from backend -->
-        {% if Errors %}
-        <div class="error-message show">{{ Errors }}</div>
-        {% endif %}
 
+        <!-- Error message container -->
         <div class="error-message" id="errorMessage"></div>
       </form>
     </div>
@@ -400,6 +403,12 @@
       const resendBtn = document.getElementById("resendBtn");
       const errorMessage = document.getElementById("errorMessage");
       const codeInput = document.getElementById("codeInput");
+      const backendErrorData = document.getElementById("backend-error-data");
+
+      // Pre-fill errors if any from initial load
+      if (backendErrorData && backendErrorData.dataset.error) {
+        showError(backendErrorData.dataset.error);
+      }
 
       inputs.forEach((input, index) => {
         input.addEventListener("input", (e) => {
@@ -474,29 +483,95 @@
       }
 
       function showError(message) {
+        if (!message) return;
         errorMessage.textContent = message;
         errorMessage.classList.add("show");
-        inputs.forEach(input => input.classList.add("error"));
+        inputs.forEach((input) => input.classList.add("error"));
       }
 
-      // Form will submit normally to Django view
+      // AJAX Form Submission
       form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
         const code = Array.from(inputs)
           .map((input) => input.value)
           .join("");
-
-        // Ensure code is set in hidden input
         codeInput.value = code;
 
         // Update button state
+        const originalText = submitBtn.textContent;
         submitBtn.textContent = "Verifying...";
         submitBtn.disabled = true;
 
-        // Form will submit normally to Django
-        // Django view will handle the verification and redirect/render accordingly
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then(async (response) => {
+            if (response.redirected) {
+              window.location.href = response.url;
+              return;
+            }
+
+            // Check if it's JSON response first (if backend supports it)
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              const data = await response.json();
+              if (data.error || data.Errors) {
+                showError(data.error || data.Errors);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+              } else if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+              }
+              return;
+            }
+
+            // If HTML response (fallback or backend default)
+            const text = await response.text();
+            const doc = new DOMParser().parseFromString(text, "text/html");
+
+            // Look for error data attribute
+            const errorData =
+              doc.getElementById("backend-error-data")?.dataset.error;
+            const errorDiv = doc.getElementById("errorMessage")?.textContent;
+
+            const errorMsg = errorData || errorDiv;
+
+            if (errorMsg) {
+              showError(errorMsg);
+            } else {
+              // If no error found but didn't redirect, maybe success but no redirect header?
+              // Or check response.url again manually
+              if (response.url !== window.location.href) {
+                window.location.href = response.url;
+              } else {
+                showError("Something went wrong. Please try again.");
+              }
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            showError("Network error. Please check your connection.");
+          })
+          .finally(() => {
+            if (
+              !window.location.href.includes("home") &&
+              !window.location.href.includes("redirect")
+            ) {
+              submitBtn.textContent = "Verify";
+              submitBtn.disabled = false;
+              // Re-validate completion state just in case
+              checkCompletion();
+            }
+          });
       });
 
-      // Handle resend button
       // Handle resend button
       resendBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -504,7 +579,9 @@
         const formData = new FormData();
         formData.append("resend", "true");
         // Get CSRF token from the form if present
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const csrfToken = document.querySelector(
+          "[name=csrfmiddlewaretoken]",
+        )?.value;
         if (csrfToken) {
           formData.append("csrfmiddlewaretoken", csrfToken);
         }
@@ -514,13 +591,17 @@
         resendBtn.textContent = "Sending...";
         resendBtn.style.pointerEvents = "none";
 
-        fetch("http://localhost:8000/auth/verify/", {
+        // Using relative path to make it portable
+        fetch(window.location.pathname, {
           method: "POST",
           body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
         })
           .then((response) => response.json())
           .then((data) => {
-            if (data.message === "Verification code sent successfully") {
+            if (data.message) {
               // Clear inputs
               inputs.forEach((input) => {
                 input.value = "";
@@ -530,6 +611,7 @@
 
               // Show feedback
               resendBtn.textContent = "Code sent!";
+              errorMessage.classList.remove("show");
 
               setTimeout(() => {
                 resendBtn.textContent = originalText;
@@ -546,11 +628,6 @@
             }, 3000);
           });
       });
-
-      // If there's an error from Django, show it with animation
-      {% if error %}
-      inputs.forEach(input => input.classList.add("error"));
-      {% endif %}
 
       // Auto-focus first input
       inputs[0].focus();

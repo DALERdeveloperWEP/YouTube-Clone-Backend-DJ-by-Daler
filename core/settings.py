@@ -73,8 +73,12 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'videos.apps.VideosConfig',
     'interactions.apps.InteractionsConfig',
-    'user_auth.apps.UserAuthConfig'
+    'user_auth.apps.UserAuthConfig',
+    'api.apps.ApiConfig',
+    "channels",
 ]
+
+ASGI_APPLICATION = "core.asgi.application"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,13 +122,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
 
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", default="5432"),
+        "OPTIONS": {
+            "sslmode": "require",
+            "connect_timeout": 10,
+        },
     }
 }
 

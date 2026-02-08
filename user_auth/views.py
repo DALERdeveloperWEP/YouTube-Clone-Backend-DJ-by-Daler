@@ -1,4 +1,5 @@
 import random
+import re
 
 from django.shortcuts import render, redirect
 from django.views import View
@@ -31,6 +32,7 @@ def send_otp_email(request, user):
     to_email = [user.email]
 
     try:
+        print('1')
         sent = send_mail(
             subject,
             message,
@@ -38,20 +40,19 @@ def send_otp_email(request, user):
             to_email,
             fail_silently=False
         )
+        print('2')
 
         if sent == 0:
+            print('3')
             otp.delete()
-            return render(request, 'register.html', {
-                "view": "register",
-                "Errors": "Email yuborilmadi. Iltimos, emailingizni tekshiring."
-            })
+            return JsonResponse({"Errors": "Email failed to send"}, status=400)
+        print('4')
 
     except Exception as e:
         otp.delete()
-        return render(request, 'register.html', {
-            "view": "register",
-            "Errors": f"Email yuborishda xato: {str(e)}"
-        })
+        print(f'{e}')
+        raise 
+        return JsonResponse({"Errors": "Email failed to send"}, status=500)
 
     return True
 
@@ -72,13 +73,13 @@ class AuthUserLogin(View):
         password = request.POST.get('password')
         
         if not email or not password:
-            return render(request, 'login-register.html', context={"view": "login", "Errors": "Email yoki Parol xato kiritildi"})
+            return JsonResponse({"error": "Email and password are required"}, status=400)
         
         user = authenticate(request, email=email, password=password)
         
         
         if not user:
-            return render(request, 'login-register.html', context={"Errors": "Email yoki Parol xato kiritildi", "view": "login"})
+            return JsonResponse({"error": "Invalid email or password"}, status=400)
         
         if user:
             request.session["otp_user_id"] = user.id
@@ -87,10 +88,7 @@ class AuthUserLogin(View):
 
             return redirect("verify")
         
-        return render(request, 'login-register.html', context={
-            "view": 'login',
-            "Errors": "Email yoki Parol xato kiritildi" 
-        })
+        return JsonResponse({"error": "Something went wrong"}, status=500)
 
 
 class AuthUserRegister(View):
@@ -110,12 +108,22 @@ class AuthUserRegister(View):
         password = request.POST.get('password')
         
         if not username or not email or not password:
-            return render(request, 'register.html', {"view": "register", "Errors": "Notogri malumot kiritdingiz."})
+            return JsonResponse({"error": "Username, email, and password are required"}, status=400)
         
         check_user = User.objects.filter(email=email).exists()
         
         if check_user:
-            return render(request, 'register.html', {"view": "register", "Errors": "Bunday user mavjud"})
+            return JsonResponse({"Errors": "User with this email already exists"}, status=400)
+
+        USERNAME_REGEX = re.compile(r'^(?=.*[a-z])[a-z0-9_-]+$')
+        
+        def validate_username(username: str) -> bool:
+            if not username:          # kamida 1 ta belgi
+                return JsonResponse({"Errors": "Username min one character"}, status=400)
+            return bool(USERNAME_REGEX.fullmatch(username))
+        
+        if not validate_username(username):
+            return JsonResponse({"Errors": "Username is not valid"}, status=400)
         
         user = User.objects.create_user(
             username=username,
@@ -198,5 +206,3 @@ def logout_view(request: HttpRequest):
     return redirect("login")
 
 
-# def check_user_authenticate_api(request: HttpRequest) -> JsonResponse:
-#     pass
