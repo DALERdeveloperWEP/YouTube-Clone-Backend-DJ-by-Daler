@@ -1,7 +1,7 @@
+import subprocess
 import json
 from uuid import uuid4
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -10,7 +10,6 @@ from decouple import config
 from django.contrib.auth import get_user_model
 import boto3
 from django.conf import settings
-from moviepy import VideoFileClip
 
 from .models import Video, Category
 from users.models import Channel, Subscriber
@@ -20,14 +19,27 @@ from interactions.models import Reaction, Comment
 User = get_user_model()
 
 
-def get_video_duration(file_path_or_url):
-    clip = VideoFileClip(file_path_or_url)
-    seconds = int(round(clip.duration))
-    clip.reader.close()  # video readerni yopish
-    # audio readerni xavfsiz yopish
-    if clip.audio and hasattr(clip.audio.reader, 'close_proc'):
-        clip.audio.reader.close_proc()
-    return seconds
+def get_video_duration(file_obj) -> int:
+    if hasattr(file_obj, "temporary_file_path"):
+        path = file_obj.temporary_file_path()
+    else:
+        import tempfile
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        for chunk in file_obj.chunks():
+            tmp.write(chunk)
+        tmp.flush()
+        path = tmp.name
+
+    cmd = [
+        "ffprobe",
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "json",
+        path
+    ]
+    result = subprocess.check_output(cmd)
+    data = json.loads(result.decode())
+    return int(float(data["format"]["duration"]))
 
 
 def format_duration(seconds: int) -> str:
@@ -79,7 +91,6 @@ def get_video_detail(slug: str):
     return video
 
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class HomePage(View):
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -128,7 +139,6 @@ class HomePage(View):
         raw = request.POST.get("categories")
         categories = json.loads(raw) if raw else []
         
-        print(categories)
         
         if not title or not categories:
             return JsonResponse({'Erros': "Bad Request"}, status=400)
@@ -151,16 +161,15 @@ class HomePage(View):
         if len(list(existing_categories)) == 0:
             return JsonResponse({"Erros": "Category not found."}, status=404)
             
-        
-        
+
 
         video_path = f"{user.username}/videos/{str(uuid4())}.{video.content_type.split('/')[-1]}"
         thumbnail_path = f"{user.username}/thumbnail/{str(uuid4())}.{thumbnail.content_type.split('/')[-1]}"
         
-        
-        print(1)
-
         try:
+            duration_seconds = get_video_duration(video)
+            duration = format_duration(duration_seconds)
+
             s3 = boto3.client(
                 "s3",
                 endpoint_url=settings.R2_ENDPOINT_URL,
@@ -174,23 +183,19 @@ class HomePage(View):
                 video_path,
                 ExtraArgs={"ContentType": video.content_type},
             )
-            print(3)
             s3.upload_fileobj(
                 thumbnail,
                 settings.R2_BUCKET_NAME,
                 thumbnail_path,
                 ExtraArgs={"ContentType": thumbnail.content_type},
             )
+   
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-        print(3)
         public_url = f"{config('DEV_PUBLICK_URL')}/{video_path}"
         thumbnail_public_url = f"{config('DEV_PUBLICK_URL')}/{thumbnail_path}"
-        duration_seconds = get_video_duration(public_url) 
-        duration = format_duration(duration_seconds)
-        
-                
+  
         save_video = Video(
             title=title,
             description=description,
@@ -201,22 +206,9 @@ class HomePage(View):
         )
         save_video.save()
         save_video.category.set(existing_categories)
-    
-        existing_category_names = list(existing_categories.values_list('name', flat=True))
-        result = {}
-        for cat in categories:
-            result[cat] = "save successful" if cat in existing_category_names else "not found"
-        
-        all_categories = [category.name for category in Category.objects.all()]
-        
-        if request.user.is_authenticated:
-            get_user_channel = Channel.objects.filter(user=request.user).first()
-        else:
-            get_user_channel = Channel.objects.none()  # bo'sh QuerySet
-        
-        
-        
+       
         return JsonResponse({"message": "Video created successfully"}, status=201)
+   
     
 @method_decorator(csrf_exempt, name='dispatch')
 class VideoDetailPage(View):
@@ -344,4 +336,4 @@ class VideoDetailPage(View):
                 return JsonResponse({"error": "Dislike reaction not found."}, status=404)
                         
         return render(request, 'watch.html')
- 
+
