@@ -32,7 +32,7 @@ class Category(models.Model):
 class Video(models.Model):
     title = models.CharField(max_length=127)
     slug = models.SlugField(unique=True, blank=True)
-    description = models.CharField(max_length=500, blank=True)
+    description = models.CharField(max_length=2000, blank=True)
     public_url = models.URLField()
     thumbnail = models.URLField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)

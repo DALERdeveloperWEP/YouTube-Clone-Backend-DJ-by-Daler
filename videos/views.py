@@ -1,15 +1,19 @@
-import subprocess
 import json
+import boto3
+import cv2
+import tempfile
+
 from uuid import uuid4
+
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from decouple import config
 from django.contrib.auth import get_user_model
-import boto3
 from django.conf import settings
+
+from decouple import config
 
 from .models import Video, Category
 from users.models import Channel, Subscriber
@@ -23,23 +27,24 @@ def get_video_duration(file_obj) -> int:
     if hasattr(file_obj, "temporary_file_path"):
         path = file_obj.temporary_file_path()
     else:
-        import tempfile
         tmp = tempfile.NamedTemporaryFile(delete=False)
         for chunk in file_obj.chunks():
             tmp.write(chunk)
         tmp.flush()
         path = tmp.name
 
-    cmd = [
-        "ffprobe",
-        "-v", "error",
-        "-show_entries", "format=duration",
-        "-of", "json",
-        path
-    ]
-    result = subprocess.check_output(cmd)
-    data = json.loads(result.decode())
-    return int(float(data["format"]["duration"]))
+    cap = cv2.VideoCapture(path)
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    cap.release()
+
+    if not fps or fps <= 0:
+        return 0
+
+    duration = frame_count / fps
+    return int(duration)
 
 
 def format_duration(seconds: int) -> str:
@@ -48,7 +53,6 @@ def format_duration(seconds: int) -> str:
     if hours > 0:
         return f"{hours}:{minutes:02}:{secs:02}"
     return f"{minutes}:{secs:02}"
-
 
 
 def get_videos_home_page():
@@ -131,6 +135,7 @@ class HomePage(View):
             "image/gif",
             "image/svg+xml"
         ]
+        
         user = request.user
         video = request.FILES.get("video")
         thumbnail = request.FILES.get('thumbnail')
@@ -215,16 +220,17 @@ class VideoDetailPage(View):
     def get(self, request: HttpRequest, slug: str) -> HttpResponse:
         video_detail = get_video_detail(slug)
         video = Video.objects.filter(slug=slug).first()
+
         if request.user.is_authenticated:
-            print('xa 1')
+            get_user_channel = Channel.objects.filter(user=request.user).first()
             user_reaction = Reaction.objects.filter(user=request.user, video=video).exists()
             if user_reaction:
-                print('xa 2')
                 user_reaction_get_position = Reaction.objects.filter(user=request.user, video=video).first()
             else:
                 user_reaction_get_position = None
             user_subscribe = Subscriber.objects.filter(subscriber=request.user, channel=video.user.channel).exists()
         else:
+            get_user_channel = Channel.objects.none()
             user_reaction = False
             user_subscribe = False
             user_reaction_get_position = False
@@ -237,6 +243,7 @@ class VideoDetailPage(View):
             'user_subscriber': user_subscribe,
             'user_reaction': user_reaction,
             'user_reaction_position': user_reaction_get_position,
+            'channel': get_user_channel,
             'comments': all_comments,
         })
 
@@ -244,7 +251,6 @@ class VideoDetailPage(View):
     def post(self, request: HttpRequest, slug: str) -> HttpResponse:
         user = request.user
         video = Video.objects.filter(slug=slug).first()
-        print('bosh')
         if not user.is_authenticated:
             return JsonResponse({"error": "User is not authenticated."}, status=401)
         if not video:
@@ -254,7 +260,6 @@ class VideoDetailPage(View):
         except Channel.DoesNotExist:
             return JsonResponse({"error": "Channel not found for the user."}, status=404)
         if request.user.is_authenticated:
-            print('xa')
             dataAction = json.loads(request.body.decode()).get('action')
             dataReaction = json.loads(request.body.decode()).get('reaction')
         else:
@@ -337,3 +342,53 @@ class VideoDetailPage(View):
                         
         return render(request, 'watch.html')
 
+
+    def delete(self, request: HttpRequest, slug: str, id: int) -> JsonResponse:
+        user = request.user
+        video = Video.objects.filter(slug=slug).first()
+        comment = Comment.objects.filter(id=id).first()
+        if not user.is_authenticated:
+            return JsonResponse({"error": "User is not authenticated."}, status=401)
+        if not video:
+            return JsonResponse({"error": "Video not found."}, status=404)
+        
+        if video.user != user:
+            return JsonResponse({"error": "You do not have permission to delete this video."}, status=403)
+        
+        if not comment:
+            return JsonResponse({"error": "Comment not found."}, status=404)
+        
+        if comment.user != user:
+            return JsonResponse({"error": "You do not have permission to delete this comment."}, status=403)
+        
+        comment.delete()
+        return JsonResponse({"message": "Comment deleted successfully."}, status=200)
+    
+    
+    def put(self, request: HttpRequest, slug: str, id: int) -> JsonResponse:
+        user = request.user
+        video = Video.objects.filter(slug=slug).first()
+        comment = Comment.objects.filter(id=id).first()
+        content = request.body.decode()['content']
+        
+        if not user.is_authenticated:
+            return JsonResponse({"error": "User is not authenticated."}, status=401)
+        if not video:
+            return JsonResponse({"error": "Video not found."}, status=404)
+        
+        if video.user != user:
+            return JsonResponse({"error": "You do not have permission to delete this video."}, status=403)
+        
+        if not comment:
+            return JsonResponse({"error": "Comment not found."}, status=404)
+        
+        if comment.user != user:
+            return JsonResponse({"error": "You do not have permission to delete this comment."}, status=403)
+        
+        if not content:
+            return JsonResponse({"error": "Content is required."}, status=400)
+        
+        comment.content = content
+        comment.save()
+        return JsonResponse({"message": "Comment updated successfully."}, status=200)
+        

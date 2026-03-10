@@ -74,11 +74,21 @@ INSTALLED_APPS = [
     'videos.apps.VideosConfig',
     'interactions.apps.InteractionsConfig',
     'user_auth.apps.UserAuthConfig',
-    'api.apps.ApiConfig',
     "channels",
 ]
 
 ASGI_APPLICATION = "core.asgi.application"
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+        }
+    }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
