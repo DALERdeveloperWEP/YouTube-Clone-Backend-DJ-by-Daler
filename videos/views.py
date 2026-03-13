@@ -2,6 +2,8 @@ import json
 import boto3
 import cv2
 import tempfile
+# from rich.pretty import pprint as rprint
+from rich import print as rprint
 
 from uuid import uuid4
 
@@ -93,6 +95,21 @@ def get_video_detail(slug: str):
     }
 
     return video
+
+
+def get_comment_tree(comment):
+    """
+    Bu funksiya comment va uning barcha subcommentlarini
+    nested dictionary ko'rinishida qaytaradi.
+    """
+    result = {
+        "id": comment.id,
+        "content": comment.content,
+        "username": comment.user.username,
+        "created_at": comment.created_at,
+        "replies": [get_comment_tree(sub) for sub in comment.subcomments.all().order_by("created_at")]
+    }
+    return result
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -218,6 +235,7 @@ class HomePage(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class VideoDetailPage(View):
     def get(self, request: HttpRequest, slug: str) -> HttpResponse:
+        user = request.user
         video_detail = get_video_detail(slug)
         video = Video.objects.filter(slug=slug).first()
 
@@ -229,6 +247,9 @@ class VideoDetailPage(View):
             else:
                 user_reaction_get_position = None
             user_subscribe = Subscriber.objects.filter(subscriber=request.user, channel=video.user.channel).exists()
+            if user == video.user:
+                user_subscribe = 'owner'
+            
         else:
             get_user_channel = Channel.objects.none()
             user_reaction = False
@@ -236,8 +257,10 @@ class VideoDetailPage(View):
             user_reaction_get_position = False
         
         all_comments = Comment.objects.filter(video=video, parent__isnull=True).select_related("user").order_by("-created_at")
-            
-            
+                
+        comments_tree = [get_comment_tree(comment) for comment in all_comments]
+        rprint(comments_tree)
+        
         return render(request, 'watch.html', context={
             'video': video_detail, 
             'user_subscriber': user_subscribe,
@@ -246,7 +269,6 @@ class VideoDetailPage(View):
             'channel': get_user_channel,
             'comments': all_comments,
         })
-
 
     def post(self, request: HttpRequest, slug: str) -> HttpResponse:
         user = request.user
@@ -259,20 +281,32 @@ class VideoDetailPage(View):
             to_channel_subscribe = video.user.channel
         except Channel.DoesNotExist:
             return JsonResponse({"error": "Channel not found for the user."}, status=404)
-        if request.user.is_authenticated:
+        if not user == video.user:
             dataAction = json.loads(request.body.decode()).get('action')
-            dataReaction = json.loads(request.body.decode()).get('reaction')
         else:
-            return JsonResponse({"error": "User is not authenticated."}, status=401)
-        commentContent = json.loads(request.body.decode("utf-8")).get('content')  # Comment content
+            dataAction = 'owner'
+            
+        dataReaction = json.loads(request.body.decode()).get('reaction')
         
-        # Comment qo'shish
+        commentContent = json.loads(request.body.decode("utf-8")).get('content')
+        reblyToCommentId = json.loads(request.body.decode("utf-8")).get('parent_id')
+        
+        
         if commentContent:
-            new_comment = Comment.objects.create(
-                video=video,
-                user=user,
-                content=commentContent
-            )
+            if reblyToCommentId:
+                parent_comment = Comment.objects.filter(id=reblyToCommentId).first()
+                new_comment = Comment.objects.create(
+                    video=video,
+                    user=user,
+                    content=commentContent,
+                    parent=parent_comment
+                )
+            else:
+                new_comment = Comment.objects.create(
+                    video=video,
+                    user=user,
+                    content=commentContent
+                )
             return JsonResponse({
                 "message": "Comment added successfully.",
                 "comment": {
@@ -284,6 +318,9 @@ class VideoDetailPage(View):
             }, status=201)
         
         match dataAction:
+            case 'owner':
+                return JsonResponse({"error": "You cannot perform this action on your own video."}, status=400)
+            
             case 'subscribe':
                 if not user.is_authenticated:
                     return JsonResponse({"error": "Authentication required."}, status=401)
@@ -298,8 +335,7 @@ class VideoDetailPage(View):
                 if get_subscription.exists():
                     get_subscription.delete()
                     return JsonResponse({"message": "Unsubscribed successfully."}, status=200)
-                return JsonResponse({"error": "Subscription not found."}, status=404)
-                                
+                return JsonResponse({"error": "Subscription not found."}, status=404)                      
             
         match dataReaction:
             
@@ -343,48 +379,56 @@ class VideoDetailPage(View):
         return render(request, 'watch.html')
 
 
-    def delete(self, request: HttpRequest, slug: str, id: int) -> JsonResponse:
+    def delete(self, request: HttpRequest, slug: str) -> JsonResponse:
         user = request.user
         video = Video.objects.filter(slug=slug).first()
-        comment = Comment.objects.filter(id=id).first()
+        
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            comment_id = body.get("id")
+        except:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            
+        comment = Comment.objects.filter(id=comment_id).first()
         if not user.is_authenticated:
             return JsonResponse({"error": "User is not authenticated."}, status=401)
         if not video:
             return JsonResponse({"error": "Video not found."}, status=404)
         
-        if video.user != user:
-            return JsonResponse({"error": "You do not have permission to delete this video."}, status=403)
+        if video.user != user and (comment and comment.user != user):
+             return JsonResponse({"error": "You do not have permission to delete this comment."}, status=403)
         
         if not comment:
             return JsonResponse({"error": "Comment not found."}, status=404)
-        
-        if comment.user != user:
-            return JsonResponse({"error": "You do not have permission to delete this comment."}, status=403)
         
         comment.delete()
         return JsonResponse({"message": "Comment deleted successfully."}, status=200)
     
     
-    def put(self, request: HttpRequest, slug: str, id: int) -> JsonResponse:
+    def put(self, request: HttpRequest, slug: str) -> JsonResponse:
         user = request.user
         video = Video.objects.filter(slug=slug).first()
-        comment = Comment.objects.filter(id=id).first()
-        content = request.body.decode()['content']
+        
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            comment_id = body.get("id")
+            content = body.get("content")
+        except:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        comment = Comment.objects.filter(id=comment_id).first()
         
         if not user.is_authenticated:
             return JsonResponse({"error": "User is not authenticated."}, status=401)
         if not video:
             return JsonResponse({"error": "Video not found."}, status=404)
         
-        if video.user != user:
-            return JsonResponse({"error": "You do not have permission to delete this video."}, status=403)
+        if video.user != user and (comment and comment.user != user):
+            return JsonResponse({"error": "You do not have permission to edit this comment."}, status=403)
         
         if not comment:
             return JsonResponse({"error": "Comment not found."}, status=404)
-        
-        if comment.user != user:
-            return JsonResponse({"error": "You do not have permission to delete this comment."}, status=403)
-        
+            
         if not content:
             return JsonResponse({"error": "Content is required."}, status=400)
         

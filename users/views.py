@@ -14,7 +14,7 @@ from decouple import config
 @method_decorator(login_required, name='dispatch')
 class ChannelView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
-        return render
+        return render(request, 'channel.html')
     
     def post(self, request: HttpRequest) -> HttpResponse:
         

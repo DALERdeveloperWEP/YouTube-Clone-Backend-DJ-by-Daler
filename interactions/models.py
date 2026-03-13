@@ -18,7 +18,7 @@ class Comment(models.Model):
         ordering = ['created_at']
         
     def __str__(self):
-        return f"{self.user.username} comment on {self.video.title}"
+        return f"({self.id}) - {self.user.username} comment on {self.video.title}"
 
 
 class Reaction(models.Model):

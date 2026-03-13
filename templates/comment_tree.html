@@ -1,0 +1,61 @@
+{% load time_ego %}
+{% for comment in comments %}
+<div class="py-3 animate-fadeIn comment-node" data-comment-id="{{ comment.id }}">
+  <div class="flex gap-3">
+    <!-- Avatar -->
+    <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-green-500 to-blue-500">
+      {% if comment.user_channel and comment.user_channel.logo %}
+        <img src="{{ comment.user_channel.logo }}" class="w-full h-full object-cover" alt="" />
+      {% elif comment.user_logo %}
+        <img src="{{ comment.user_logo }}" class="w-full h-full object-cover" alt="" />
+      {% else %}
+        {{ comment.username.0|upper }}
+      {% endif %}
+    </div>
+
+    <div class="flex flex-col gap-1 flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-white">@{{ comment.username }}</span>
+        <span class="text-xs text-white/50">{{ comment.created_at|yt_ago }}</span>
+        
+        {% if request.user.username == comment.username %}
+          <div class="comment-menu ml-auto">
+            <button class="w-8 h-8 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-colors menu-trigger">
+              <iconify-icon icon="solar:menu-dots-bold" width="18"></iconify-icon>
+            </button>
+            <div class="comment-menu-dropdown">
+              <button class="edit-btn" data-comment-id="{{ comment.id }}" data-content="{{ comment.content }}">
+                <iconify-icon icon="solar:pen-linear" width="15"></iconify-icon> Edit
+              </button>
+              <button class="delete-btn" data-comment-id="{{ comment.id }}">
+                <iconify-icon icon="solar:trash-bin-trash-linear" width="15"></iconify-icon> Delete
+              </button>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <p class="text-sm text-white break-words">{{ comment.content }}</p> 
+      
+      <div class="flex items-center gap-1 mt-1">
+        <button class="text-xs font-medium text-white/70 hover:text-white transition-colors px-2 py-1 rounded-full hover:bg-white/10 reply-btn" data-comment-id="{{ comment.id }}" data-username="{{ comment.username }}">Reply</button>
+      </div>
+
+      <!-- Reply input area -->
+      <div class="reply-input-area hidden mt-2 flex gap-2" data-for="{{ comment.id }}">
+        <input type="text" placeholder="Add a reply..." class="flex-1 bg-transparent border-b border-white/10 focus:border-white outline-none pb-1 text-sm placeholder:text-white/30 transition-colors" />
+        <button class="reply-cancel-btn text-xs text-white/50 hover:text-white px-2">Cancel</button>
+        <button class="reply-submit-btn px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors" data-parent-id="{{ comment.id }}">Reply</button>
+      </div>
+
+      <!-- Recursive call for replies -->
+      {% if comment.replies %}
+        <div class="subcomments-list ml-6 mt-3 pl-4 border-l border-white/10 space-y-3" data-sublist="{{ comment.id }}">
+          {% include 'comment_tree.html' with comments=comment.replies %}
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endfor %}

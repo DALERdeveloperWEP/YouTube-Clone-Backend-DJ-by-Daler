@@ -563,3 +563,21 @@ function sendData(data) {
     return res;
   });
 }
+
+// --- Comment Kebab Menu Logic ---
+document.addEventListener('click', function(e) {
+  const trigger = e.target.closest('.menu-trigger');
+  
+  // Close all open menus first if clicking elsewhere or on another trigger
+  if (!trigger || !trigger.parentElement.classList.contains('active')) {
+    document.querySelectorAll('.comment-menu.active').forEach(menu => {
+      menu.classList.remove('active');
+    });
+  }
+
+  // Toggle the clicked menu
+  if (trigger) {
+    e.stopPropagation(); // Prevent document click from immediately closing
+    trigger.parentElement.classList.toggle('active');
+  }
+});
